@@ -1,0 +1,96 @@
+Let us recall the expression of the pinball loss \seep{figure:pinball}:
+\begin{dmath}[compact]
+    v_{\hyperparameter}: (y,\,y') \in
+    \reals^2 \mapsto  \max{(\hyperparameter (y-y'), (\hyperparameter
+    -1)(y-y'))} \in \reals.
+\end{dmath}
+\begin{floatingfigure}{.7\textwidth}
+    \centering
+    \input{fig/pinball.tex}
+    \caption{\label{figure:pinball} Pinball loss for $\hyperparameter=0.8$.}
+\end{floatingfigure}
+\begin{proposition}\label{proposition:generalized_excess_risk}
+    Let $X,Y$ be two \acp{rv} respectively taking values in $\mcX$ and
+    $\reals$, and $q \colon \mcX \to \mathcal{F}([0,1],\mathbb{R})$ the
+    associated conditional quantile function.  Let $\mu$ be a positive measure
+    on $[0,1]$ such that $ \int_{0}^1 \expectation\left[
+    v_{\hyperparameter}\left(Y,q(X)(\hyperparameter)\right)\right] \mathrm{d}
+    \mu(\hyperparameter) < \infty$.  Then for $\forall h \in
+    \functionspace{\mathcal{X}}{\functionspace{\closedinterval{0}{1}}{\reals}}$
+    \begin{dmath*}
+        \risk(h) - \risk(q) \geq 0,
+    \end{dmath*}
+    where $R$ is the risk defined in \cref{equation:h-objective}.
+\end{proposition}
+\begin{proof}
+    The proof is based on the one given in \citep{li2007quantile} for a single
+    quantile. Let $f \in
+    \functionspace{\mcX}{\functionspace{\closedinterval{0}{1}}{\reals}}$,
+    $\hyperparameter \in (0,1)$ and $(x,y) \in \mcX \times \reals$. Let also
+    \begin{align*}
+        s &=
+        \begin{cases}
+            1 ~ \text{if } y \leq f(x)(\hyperparameter)      \\
+            0  \text{ otherwise}
+        \end{cases},&
+        t &=
+        \begin{cases}
+            1 ~ \text{if } y \leq q(x)(\hyperparameter)      \\
+            0  \text{ otherwise}
+        \end{cases}.
+    \end{align*}
+    It holds that
+    \begin{dmath*}
+        v_{\hyperparameter}(y,h(x)(\hyperparameter)) -
+        v_{\hyperparameter}(y,q(x)(\hyperparameter))
+        = \hyperparameter(1-s)(y-h(x)(\hyperparameter)) + (\hyperparameter -
+        1)s(y-h(x)(\hyperparameter)) -
+        \hyperparameter(1-t)(y -q(x)(\hyperparameter)) -
+        (\hyperparameter-1)t(y-q(x)(\hyperparameter))
+        = \hyperparameter(1-t)(q(x)(\hyperparameter) - h(x)(\hyperparameter)) +
+        \hyperparameter((1-t)-(1-s))h(x)(\hyperparameter) +
+        (\hyperparameter-1)t(q(x)(\hyperparameter - h(x)(\hyperparameter))) +
+        (\hyperparameter-1)(t-s)h(x)(\hyperparameter) + (t-s)y\nonumber
+        =     (\hyperparameter -t)(q(x)(\hyperparameter) -
+        h(x)(\hyperparameter)) +
+        (t-s)(y-h(x)(\hyperparameter)).\label{eq:decompo_pinball}
+    \end{dmath*}
+    Then, notice that
+    \begin{dmath*}[compact]
+        \expectation{[(\hyperparameter - t)(q(X)(\hyperparameter) -
+        h(X)(\hyperparameter))]} =
+        \expectation{[\expectation{[(\hyperparameter - t)(q(X)(\hyperparameter)
+        - h(X)(\hyperparameter))]} | X]} =
+        \expectation{[\expectation{[(\hyperparameter - t) | X ]}
+        (q(X)(\hyperparameter) - h(X)(\hyperparameter))]}
+    \end{dmath*}
+    and since $q$ is the true quantile function,
+    \begin{align*}
+        \expectation{ [t | X]} = \expectation{ [\mathbf{1}_{\{ Y \leq
+        q(X)(\hyperparameter)\}} | X]} = \probability{[Y \leq
+        q(X)(\hyperparameter) | X]} = \hyperparameter,
+    \end{align*}
+    so
+    \begin{align*}
+        \expectation{[(\hyperparameter - t)(q(X)(\hyperparameter) -
+        h(X)(\hyperparameter))]} =0.
+    \end{align*}
+    Moreover, $(t-s)$ is negative when $q(x)(\hyperparameter) \leq y \leq
+    h(x)(\hyperparameter)$, positive when $h(x)(\hyperparameter) \leq y \leq
+    q(x)(\hyperparameter)$ and $0$ otherwise, thus the quantity
+    $(t-s)(y-h(x)(\hyperparameter))$ is always positive. As a consequence,
+    \begin{dmath*}[compact]
+        R(h) - R(q) = \int_{[0,1]}
+        \expectation{[v_{\hyperparameter}(Y,h(X)(\hyperparameter)) -
+        v_{\hyperparameter}(Y,q(X)(\hyperparameter))]} \mathrm{d}
+        \mu(\hyperparameter) \geq 0
+    \end{dmath*}
+    which concludes the proof.
+\end{proof}
+The \cref{proposition:generalized_excess_risk} allows us to derive conditions
+under which the minimization of the risk above yields the true quantile
+function. Under the assumption that (i) $q$ is continuous (as seen as a
+function of two variables), (ii) $\mathrm{Supp}(\mu) = [0,1] $, then the
+minimization of the integrated pinball loss performed in the space of
+continuous functions yields the true quantile function on the support of
+$\probability_{X,Y}$.

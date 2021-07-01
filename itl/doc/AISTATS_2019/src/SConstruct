@@ -1,0 +1,194 @@
+import os
+
+from subprocess import call
+
+AddOption('--type',
+          dest='type',
+          type='string',
+          nargs=1,
+          action='store',
+          metavar='[pdf, dvi, dvipdf]',
+          default='pdf',
+          help='output file type')
+file_type = GetOption('type')
+AddOption('--kind',
+          dest='kind',
+          type='string',
+          nargs=1,
+          action='store',
+          metavar='[final, draft, dirty]',
+          default='dirty',
+          help='version of the document compiled')
+file_kind = GetOption('kind')
+AddOption('--no-synctex',
+          dest='synctex',
+          action='store_true',
+          help='don\'t use synctex')
+use_synctex = not(GetOption('synctex'))
+AddOption('--no-comment',
+          dest='comment',
+          action='store_true',
+          help='don\'t write comments')
+no_comment = GetOption('comment')
+AddOption('--prefix',
+          dest='prefix',
+          type='string',
+          nargs=1,
+          action='store',
+          metavar='DIR',
+          default='..',
+          help='installation prefix')
+dir_path = Dir('.').abspath
+
+if COMMAND_LINE_TARGETS:
+    target = COMMAND_LINE_TARGETS
+else:
+    target = ['aistats2019']
+
+env = Environment(ENV=os.environ,
+                  PREFIX=GetOption('prefix'))
+
+env.Replace(LATEX='latex')
+env.Replace(TEX='tex')
+env.Replace(PDFLATEX='xelatex')
+env.Replace(PDFTEX='xetex')
+env.Replace(BIBTEX='biber')
+env.Replace(DVIPS='dvips')
+
+env.AppendUnique(PDFLATEXFLAGS='-shell-escape')
+env.AppendUnique(PDFLATEXFLAGS='-interaction=batchmode')
+env.AppendUnique(PDFLATEXFLAGS='-halt-on-error')
+env.AppendUnique(PDFLATEXFLAGS='-file-line-error')
+
+env.AppendUnique(PDFTEXFLAGS='-shell-escape')
+env.AppendUnique(PDFTEXFLAGS='-interaction=batchmode')
+env.AppendUnique(PDFTEXFLAGS='-halt-on-error')
+env.AppendUnique(PDFTEXFLAGS='-file-line-error')
+
+env.AppendUnique(LATEXFLAGS='-shell-escape')
+env.AppendUnique(LATEXFLAGS='-interaction=batchmode')
+env.AppendUnique(LATEXFLAGS='-halt-on-error')
+env.AppendUnique(LATEXFLAGS='-file-line-error')
+
+env.AppendUnique(DVIPSFLAGS='-P pdf')
+env.AppendUnique(DVIPSFLAGS='-t a4')
+
+if use_synctex:
+    env.AppendUnique(PDFTEXFLAGS='-synctex=1')
+    env.AppendUnique(PDFLATEXFLAGS='-synctex=1')
+    env.AppendUnique(LATEXFLAGS='-synctex=1')
+
+# Look in standard directory ~/texmf for .sty files.
+env.SetDefault(TEXMFHOME=os.path.join(os.environ['HOME'], 'texmf'))
+
+dependencies_name_list = []
+code_dir = dir_path + '/../../../demos/AISTATS_2019'
+autogen_dir = dir_path + '/src/fig/autogen/'
+if file_type == 'dvi' or file_type == 'dvipdf':
+    ext = '.eps'
+else:
+    ext = '.pdf'
+if not os.path.exists(autogen_dir):
+    os.makedirs(autogen_dir)
+    call('pip install -U ../../')
+
+crossing_fig_path = autogen_dir + '/iqr_crossing' + ext
+if not os.path.exists(crossing_fig_path):
+    crossing_fig_path = env.Command(crossing_fig_path,
+                                    code_dir + '/iqr_crossing.py',
+                                    ['ITL_PRECISION=\'fp64\' '
+                                     'python $SOURCE '
+                                     '--sample_train=40 '
+                                     '--output_dir=' + autogen_dir])
+cost_sensitive_fig_path = autogen_dir + '/icsl_vs' + ext
+if not os.path.exists(cost_sensitive_fig_path):
+    cost_sensitive_fig_path = env.Command(cost_sensitive_fig_path,
+                                          code_dir + '/icsl_vs.py',
+                                          ['ITL_PRECISION=\'fp64\' '
+                                           'python $SOURCE '
+                                           '--output_dir=' + autogen_dir])
+density_nu_fig_path = autogen_dir + '/iocsvm_nu' + ext
+if not os.path.exists(density_nu_fig_path):
+    density_nu_fig_path = env.Command(density_nu_fig_path,
+                                      code_dir + '/iocsvm_nu.py',
+                                      ['ITL_PRECISION=\'fp64\' '
+                                       'python $SOURCE '
+                                       '--setting=anomaly '
+                                       '--output_dir=' + autogen_dir])
+density_kappa_fig_path = autogen_dir + '/iqr_kappa' + ext
+if not os.path.exists(density_kappa_fig_path):
+    density_kappa_fig_path = env.Command(density_kappa_fig_path,
+                                         code_dir + '/iqr_kappa.py',
+                                         ['ITL_PRECISION=\'fp64\' '
+                                          'python $SOURCE '
+                                          '--output_dir=' + autogen_dir])
+iqr_m_fig_path = autogen_dir + '/iqr_m' + ext
+if not os.path.exists(iqr_m_fig_path):
+    density_m_fig_path = env.Command(iqr_m_fig_path,
+                                         code_dir + '/iqr_m.py',
+                                         ['ITL_PRECISION=\'fp64\' '
+                                          'python $SOURCE '
+                                          '--output_dir=' + autogen_dir])
+dependencies_name_list = (dependencies_name_list +
+                          [crossing_fig_path,
+                           cost_sensitive_fig_path,
+                           density_nu_fig_path,
+                           density_kappa_fig_path,
+                           iqr_m_fig_path])
+
+if target:
+    if not ('sample' in target or 'aistats2019' in target):
+        raise('Invalid target')
+basename = {}
+source_name_list = {}
+
+for name in target:
+    if name == 'aistats2019':
+        env.AppendUnique(PDFLATEXFLAGS='\'\\def\\' + file_kind + '{}' +
+                         '\\def\\type' + file_type + '{}' +
+                         ('\\def\\nocomment{}' if no_comment else '') +
+                         '\input{aistats2019}\'')
+        long_name = name + '_' + file_kind
+        source_name_list.update({name: name + '.tex'})
+    if name == 'sample':
+        source_name_list.update({name: name + '2e.tex'})
+dependencies_name_list = (dependencies_name_list +
+                          [Glob('*.sty'), Glob('*.cls'), Glob('*.bib'),
+                           Glob('*.cfg')])
+for source_name in source_name_list.values():
+    env.Depends(source_name, dependencies_name_list)
+if file_type == 'dvi':
+    dvi_list = {name: env.DVI(source_name)
+                for (name, source_name) in source_name_list.items()}
+    pdf_list = {}
+if file_type == 'pdf':
+    dvi_list = {}
+    pdf_list = {name: env.PDF(source_name)
+                for (name, source_name) in source_name_list.items()}
+if file_type == 'dvipdf':
+    dvi_list = {name: env.DVI(source_name)
+                for (name, source_name) in source_name_list.items()}
+    pdf_list = {name: env.PDF(dvi_name)
+                for (name, dvi_name) in dvi_list.items()}
+
+install_list_dvi = {name: env.Install("$PREFIX/bin", output)
+                    for (name, output) in dvi_list.items()}
+install_list_pdf = {name: env.Install("$PREFIX/bin", output)
+                    for (name, output) in pdf_list.items()}
+install_synctex = {name: env.Install("$PREFIX/bin", name +
+                                     ".synctex.gz") for name in target}
+
+for name in target:
+    try:
+        env.Alias(name, install_list_dvi[name])
+        env.Precious(install_list_dvi)  # Don't remove before it's build
+    except:
+        pass
+    try:
+        env.Alias(name, install_list_pdf[name])
+        env.Precious(install_list_pdf)
+    except:
+        pass
+
+env.Clean(list(pdf_list.values()) + list(dvi_list.values()),
+          Glob('build/*') + Glob('bin/*'))

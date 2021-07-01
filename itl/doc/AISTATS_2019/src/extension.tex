@@ -1,0 +1,197 @@
+% section Extension of the framework to density level set estimation
+%
+% PLEASE DON'T TOUCH THE ACRONYMS (EVERY \ac, \acp, \acs, etc.) THEY WORK FINE!
+% IF YOU DON'T SEE THEM COMPILE WITH
+%
+% scons --kind=draft
+%
+% AND YOU SHOULD SEE THEM
+%
+% IF IT DOESNT COMPILE ON YOUR COMPUTER GET OVER IT AND DO NOT TOUCH THEM! THEY
+% ARE EXPANDED AT THE RIGHT MOMENT, WITH THE PLURAL FORM IF NEEDED ON COMPUTERS
+% WHERE IT COMPILES.
+%
+% NOTE: IF YOU DONT WANT TO USE THE COMMAND \ac, \acp, \acs, ... \ IT'S FINE.
+% JUST DONT TOUCH THE EXISTING ONE.
+%
+In this section we show how the proposed idea can be extended from the
+supervised domain (\cref{section:infinite_tasks}) to the unsupervised setting.
+We will use \ac{DLSE} as an illustration.  \rb{This problem has been tackled
+by \citet{hastie2004entire,lee2007one,lee2010nested} in the context of
+solution path algorithm}
+% The risks for
+% the \ac{QR}, \ac{CSC} and \ac{DLSE} problems are summarized in
+% \cref{table:integrated_risks}.
+
+%
+\paragraph{\acl{DLSE}:} In outlier detection, the goal is to separate outliers
+from inliers. A classical technique to tackle this task is \ac{OCSVM}
+\citep{scholkopf2000new}. \ac{OCSVM} has a free parameter
+$\hyperparameter\in(0, 1]$, which can be proved to be an upper bound on the
+fraction of outliers. When using a Gaussian kernel with a bandwidth tending
+towards zero, \acs{OCSVM} consistently estimates density level sets
+\citep{vert2006consistency}.  This unsupervised learning problem can be
+described by minimizing \emph{jointly} over $h\in\hypothesisspace$ \emph{and}
+$t\in\reals$ with
+\begin{align*}%\label{equation:one_class_hinge_loss}
+    \parametrizedcost{\hyperparameter}(t, h(x)) &= -t +
+    \frac{1}{\hyperparameter}\abs{t - h(x)}_+, &
+    \regularizer_{\hyperparameter}(h) &=
+    \frac{1}{2}\norm{h}^2_{\hypothesisspace}.
+\end{align*}
+%
+As for the supervised parametric tasks, estimating a continuum of density level
+sets can be dealt with in the context of \acl{vv-RKHS}. Let $K$ be the
+operator-valued kernel defined such that $K(x,z)=k_{\inputspace}(x,z)
+I_{\mcH_{k_{\hyperparameter}}}$.  The parameter $t$ now becomes a function over
+the hyperparameter space, belonging to $\mcH_{k_{b}}$, the \ac{RKHS} associated
+with the scalar kernel $k_{b}:\hyperparameterspace \times \hyperparameterspace
+\rightarrow \reals$ that might be different from $k_{\hyperparameterspace}$.
+Assume also that $\hyperparameterspace \subseteq \closedinterval{\epsilon}{1}$
+where $\epsilon > 0$\footnote{We choose $\hyperparameterspace \subseteq
+\closedinterval{\epsilon}{1}$, $\epsilon > 0$ rather than
+$\hyperparameterspace\subseteq\closedinterval{0}{1}$ because the loss might not
+be integrable on $\closedinterval{0}{1}$.}. Then, learning a
+continuum of level sets boils down to the minimization problem
+\begin{align}\label{problem:ocsvm}
+    &\argmin_{h \in \mcH_K, t \in \mcH_{k_{b}}} \sampledempiricalrisk(h,t) +
+    \widetilde{\Omega}_{\lambda}(h,t) \condition{$\lambda >0$},\\
+\text{where} \quad &
+\begin{cases} \nonumber
+  \sampledempiricalrisk(h,t) &= \frac{1}{n}
+  \sum_{i, j=1}^{n, m} \frac{w_j}{\hyperparameter_j} \left(
+  \abs{t(\hyperparameter_j) - h(x_i)(\hyperparameter_j)}_+ -
+  t(\hyperparameter_j)\right),  \\
+  \widetilde{\Omega}_{\lambda}(h,t)
+  &=  \sum_{j=1}^m w_j
+  \norm{h(\cdot)(\hyperparameter_j)}_{\mcH_{k_{\mcX}}}^2  + \frac{\lambda}{2}
+  \norm{t}_{\mcH_{k_{b}}}^2.
+\end{cases}
+\end{align}
+The decision function to check whether
+a point $x$ is inside the level-set $\hyperparameter$ is then
+%\begin{align*}
+$d(x)(\hyperparameter) \defeq \indicator{\reals_{+}}(h(x)(\hyperparameter) -
+t(\hyperparameter))$.
+%\end{align*}
+Note that contrary to the supervised case, one directly integrates the empirical
+problem in the hyperparameterspace, leading to a specific form for the
+regularization term on $h$, namely $ \sum_{j=1}^m w_j h(\cdot)(\hyperparameter_j)$.
+It corresponds to a $\theta$-pointwise regularization in the
+\ac{RKHS} $\mcH_{k_{\mcX}}$, and while this regularization term is weaker than the
+\ac{vv-RKHS} norm used in supervised learning (in the sense that it can be nullified
+while the vector-valued function $h$ is not $0$), it suffices to establish a representer
+theorem.
+%
+% The decision function to check whether
+% a point $x$ is inside the level-set $\hyperparameter$ is then
+% %\begin{align*}
+% $d(x)(\hyperparameter) \defeq \indicator{\reals_{+}}(h(x)(\hyperparameter) -
+% t(\hyperparameter))$.
+% %\end{align*}
+% %
+% Eventually, we can obtain the following representer statement, which can be
+% viewed as the unsupervised analogy of
+%\cref{theorem:representer_supervised}.
+%
+\begin{proposition}[Representer] \label{theorem:representer_ocsvm}
+    %Let $h^*,t^* \in \mcH_K \times \mcH_{k_{}}$ be the solution of the
+    %minimization problem
+    Assume that $k_{\hyperparameterspace}$ is bounded: $\sup_{\hyperparameter
+    \in \Theta} k_{\hyperparameterspace}(\hyperparameter,\theta) < +\infty$.
+    Then the  minimization problem described in \cref{problem:ocsvm} has a
+    unique solution $(\minimizer{h}, \minimizer{t})$ and  there exist
+    $\left(\alpha_{ij}\right)_{i,j = 1}^{n,m}\in \reals^{n\times m}$ and $\left
+    ( \beta_{j} \right)_{j=1}^m \in \reals^m$ such that for $\forall
+    (x,\hyperparameter) \in \inputspace \times \openinterval{0}{1}$,
+     \begin{align*}
+            \minimizer{h}(x)(\hyperparameter) &=
+            \displaystyle\sum_{i=1}^{n}\displaystyle\sum_{j=1}^m \alpha_{ij}
+            k_{\mcX}(x,x_i)
+            k_{\hyperparameterspace}(\hyperparameter,\hyperparameter_j),&
+            t^*(\hyperparameter) &= \sum_{j=1}^{m} \beta_{j}
+            k_{b}(\hyperparameter,\hyperparameter_j).
+     \end{align*}
+\end{proposition}
+\begin{sproof}
+    First we show that the infimum exists, and that it must be attained in some
+    subspace of $\mcH_K \times \mcH_{k_b}$ over which the objective function is
+    coercive. By the reproducing property, we get the claimed finite decomposition.
+\end{sproof}
+
+\paragraph{Remark (Related work):}
+The task of finding a finite family of nested level sets of a density has been
+tackled in \citep{lee2010nested}. They use the knowledge of the whole solution
+path as well as an additional constraint to ensure the nested property, but
+lose the $\nu$-property due to that constraint. This problem is circumvented
+by q-\acs{OCSVM} introduced in \citep{glazer2013q}.
+By choosing $k_{\hyperparameterspace}(\hyperparameter,
+\hyperparameter')=1$ (for all $\hyperparameter\,, \hyperparameter'\in
+\hyperparameterspace$) to be the constant kernel, $k_b(x, z) =
+\indicator{\Set{x}}(z)$, $\mu=\frac{1}{m}\sum_{j=1}^m \delta_{\theta_j}$, our
+approach specializes to q-\acs{OCSVM}.
+
+% \begin{table*}
+%     \caption{Examples for objective \eqref{equation:integrated_cost}.
+%     $\psi_1^\kappa$, $\psi_+^\kappa$: $\kappa$-smoothed absolute value
+%     and positive part. $h_{x}(\hyperparameter)\defeq h(x)(\theta)$.
+%     \label{table:integrated_risks}}
+%     \begin{adjustwidth}{-2cm}{-2cm}
+%     \vspace{0.1in}
+%     \begin{center}
+%         \begin{scriptsize}
+%             \begin{sc}
+%                 \begin{tabular}{lll}
+%                     \toprule
+%                     & loss & penalty \\
+%                     \midrule
+%                     Quantile  & $\displaystyle\int_{\closedinterval{0}{1}}
+%                     \abs{\hyperparameter - \indicator{\reals_{-}}(y -
+%                     h_x(\hyperparameter))}\abs{y - h_x(\hyperparameter)}
+%                     d\mu(\hyperparameter)$ &
+%                     $\lambda_{nc}\int_{\closedinterval{0}{1}}
+%                     \abs{-\frac{dh_x}{d\hyperparameter}(\hyperparameter)}_+
+%                     d\mu(\hyperparameter) + \frac{\lambda}{2}\norm{h}_{\mcH_K}^2$ \\
+%                     M-Quantile (smooth)  &
+%                     $\displaystyle\int_{\closedinterval{0}{1}}
+%                     \abs{\hyperparameter - \indicator{\reals_{-}}(y -
+%                     h_x(\hyperparameter))}\psi_1^\kappa\left(y -
+%                     h_x(\hyperparameter)\right)d\mu(\hyperparameter)$ &
+%                     $\lambda_{nc}\int_{(0, 1)} \psi_+^\kappa\left(-
+%                     \frac{dh_x}{d\hyperparameter}(\hyperparameter)\right)
+%                     d\mu(\hyperparameter) + \frac{\lambda}{2}\norm{h}_{\mcH_K}^2$ \\
+%                     Expectiles (smooth) &
+%                     $\displaystyle\int_{\closedinterval{0}{1}}
+%                     \abs{\hyperparameter - \indicator{\reals_{-}}(y -
+%                     h_x(\hyperparameter))}\left(y -
+%                     h_x(\hyperparameter)\right)^2d\mu(\hyperparameter)$ &
+%                     $\lambda_{nc} \int_{(0, 1)}
+%                     \abs{-\frac{dh_x}{d\hyperparameter}(\hyperparameter)}_+^2
+%                     d\mu(\hyperparameter) + \frac{\lambda}{2}\norm{h}_{\mcH_K}^2$ \\
+%                     Cost-Sensitive & $\displaystyle\int_{ \closedinterval{-1}{1}}
+%                     \abs{\frac{\hyperparameter + 1}{2} -
+%                     \indicator{\{-1\}}(y)}\abs{1 - yh_{x}(\hyperparameter)}_{+}
+%                     d\mu(\theta)$ & $ \frac{\lambda}{2}\norm{h}_{\mcH_K}^2$ \\
+%                     Cost-Sensitive (smooth) &
+%                     $\displaystyle\int_{\closedinterval{-1}{1}}
+%                     \abs{\frac{\hyperparameter + 1}{2} -
+%                     \indicator{\{-1\}}(y)}\psi_+^\kappa\left(1 -
+%                     yh_{x}(\hyperparameter)\right) d\mu(\theta)$ & $
+%                     \frac{\lambda}{2}\norm{h}_{\mcH_K}^2$ \\
+%                     Level-Set   &
+%                     $\displaystyle\int_{\closedinterval{\epsilon}{1}}
+%                     -t(\hyperparameter) +
+%                     \frac{1}{\theta}\abs{t(\hyperparameter) -
+%                     h_x(\hyperparameter)}_+
+%                     d\mu(\hyperparameter)$ & $
+%                     \frac{1}{2}\displaystyle\int_{
+%                     \closedinterval{\epsilon}{1}}
+%                     \norm{h(\cdot)(\hyperparameter)}_{
+%                     \mcH_{k_{\inputspace}}}^2 d\mu(\hyperparameter) +
+%                     \frac{\lambda}{2}\norm{t}_{\mcH_{k_b}}^2$\\ \bottomrule
+%                 \end{tabular}
+%             \end{sc}
+%         \end{scriptsize}
+%     \end{center}
+%   \end{adjustwidth}
+% \end{table*}

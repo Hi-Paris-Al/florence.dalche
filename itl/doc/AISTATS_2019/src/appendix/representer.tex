@@ -1,0 +1,343 @@
+\begin{proof} [Proof of \cref{theorem:representer_supervised}]
+    First notice that
+    \begin{align}
+        J: h \in \mcH_K \mapsto \frac{1}{n} \displaystyle\sum_{i=1}^n
+        \displaystyle\sum_{j=1}^m w_j\hcost(\hyperparameter_j,y_i,
+        h(x_i)(\hyperparameter_j)) + \frac{\lambda}{2} \norm{h}_{\mcH_K}^2 \in
+        \reals
+    \end{align}
+    is a proper lower semicontinuous strictly convex function
+    \citep[Corollary 9.4]{bauschke2011convex}, hence $J$ admits a unique
+    minimizer $h^* \in \mcH_K$ \citep[Corollary 11.17]{bauschke2011convex}.
+    Let
+    \begin{dmath}[compact] \label{decompo_theorem}
+        \mcU = \sspan{ \Set{
+        (K(\cdot,x_i)k_{\Theta}(\cdot,\theta_j))_{i,j=1}^{n,m} | \forall  x_i
+        \in \inputspace , \forall \theta_j \in \hyperparameterspace }} \subset
+        \mcH_K.
+    \end{dmath}
+    Then $\mcU$ is a finite-dimensional subspace of $\mcH_K$, thus closed in
+    $\mcH_K$, and it holds that $\mcU \oplus \mcU^{\perp} = \mcH_K$, so $h^*$
+    can be decomposed as $h^* = h_{\mcU}^* + h_{\mcU^{\perp}}^*$ with
+    $h_{\mcU}^* \in \mcU$ and $h_{\mcU^{\perp}}^* \in \mcU^{\perp}$. Moreover,
+    for all $1 \leq i \leq n$ and $1 \leq j \leq m$,
+    \begin{align*}
+        h_{\mcU^{\perp}}^*(x_i)(\theta_j) &= \langle h_{\mcU^{\perp}}^*(x_i) ,
+        k_{\Theta}(\cdot,\theta_j) \rangle_{\mcH_{k_{\Theta}}}
+        = \langle h_{\mcU^{\perp}}^* , K(\cdot,x_i)k_{\Theta}(\cdot,\theta_j)
+        \rangle_{\mcH_K}
+        = 0,
+    \end{align*}
+    so $J(h^*) = J(h_{\mcU}^*) + \lambda \norm{h_{\mcU^{\perp}}^*}_{\mcH_K}^2$.
+    However $h^*$ is the minimizer of J, therefore $h_{\mcU^{\perp}}^*=0$ and
+    there exist $\left(\alpha_{ij}\right)_{i,j = 1}^{n,m}$ such that $\forall
+    x,\hyperparameter \in \mcX \times \hyperparameterspace$,
+    $h^*(x)(\hyperparameter) = \sum_{i,j=1}^{n,m} \alpha_{ij} k_{\mcX}(x,x_i)
+    k_{\hyperparameterspace}(\hyperparameter,\hyperparameter_j)$.
+    % Remark \citep{carmeli06vector} that $\mcH_K$ is isometric to the real RKHS
+    %  $\mcH_{k_{\mcX}\times k_{\Theta}}$ thanks to the isometry
+    %  \begin{dmath*}
+    %    V \colon
+    %    \begin{cases}
+    %        \mcH_K & \to ~ \mcH_{k_{\mcX}\times k_{\Theta}}       \\
+    %        h  & \mapsto (x,\theta \mapsto h(x)(\theta))
+    %    \end{cases}
+    %  \end{dmath*}
+    %   Let $g^* = V(h^*)$, and define
+    %   \begin{dmath*}[compact]
+    %   \mcV = \sspan{ \left \{
+    %   (k_{\mcX}(x_i,\cdot)k_{\Theta}(\theta_j,\cdot))_{i,j=1}^{n,m} \right \}}
+    %   \subset \mcH_{k_{\mcX}\times k_{\Theta}}
+    %   \end{dmath*}
+      % $\mcU$ is a finite dimensional subspace of $\mcH_{k_{\mcX}\times k_{\Theta}}$,
+      % thus closed, and $\mcV \oplus \mcV^{\perp} = \mcH_{k_{\mcX}\times k_{\Theta}}$,
+      % so that we can write $g^* = g_{\mcV}^* + g_{\mcV^{\perp}}^*$ with $g_{\mcV}^* \in \mcV$
+      % and $g_{\mcV^{\perp}}^* \in \mcV^{\perp}$. By construction,
+      % \begin{dmath*}
+      %   \widetilde{R}_{\mcS}(h^*) = \frac{1}{nm} \sum_{i,j=1}^{n,m}
+      %   \parametrizedcost{\hyperparameter_j}(y,h^*(x_i)(\hyperparameter_j)) +
+      %    \lambda \norm{h^*}_{\mcH_K}^2
+      %   =\frac{1}{nm} \sum_{i,j=1}^{n,m}
+      %    \parametrizedcost{\hyperparameter_j}(y,g^*(x_i,\hyperparameter_j)) +
+      %    \lambda \norm{g^*}_{\mcH_{k_{\mcX}\times k_{\Theta}}}^2
+      %    = \frac{1}{nm} \sum_{i,j=1}^{n,m}
+      %    \parametrizedcost{\hyperparameter_j}(y,g_{\mcV}^*(x_i,\hyperparameter_j)) +
+      %    \lambda (\norm{g_{\mcV}^*}_{\mcH_{k_{\mcX}\times k_{\Theta}}}^2 +
+      %    \norm{g_{\mcV^{\perp}}^*}_{\mcH_{k_{\mcX}\times k_{\Theta}}}^2)
+      % \end{dmath*}
+      % since
+    \paragraph{Derivative shapes constraints:}
+    Reminder: for a function $h$ of one variable, we denote $\partial h$ the
+    derivative of $h$. For a function $k(\theta, \theta')$ of two variables we
+    denote $\partial_1 k$ the derivative of $k$ with respect to $\theta$ and
+    $\partial_2 k$ the derivative of $k$ with respect to $\theta'$.
+    %
+    From \citet{zhou2008derivative}, notice that if $f\in\mathcal{H}_k$, where
+    $\mathcal{H}_k$ is a scalar-valued \ac{RKHS} on a compact subset
+    $\hyperparameterspace$ of $\reals^d$, and $k\in
+    \mathcal{C}^{2}(\hyperparameterspace \times \hyperparameterspace)$ (in the
+    sense of \citet{ziemer2012weakly}) then $\partial f\in\mathcal{H}_k$. Hence
+    if one add a new term of the form:
+    \begin{dmath*}
+        \lambda_{\text{nc}} \sum_{i=1}^n\sum_{j=1}^m \Omega_{\text{nc}}
+        \left(\left(\partial\left[h(x_i)\right]\right)(\theta_j)\right) =
+        \lambda_{\text{nc}}\sum_{i=1}^n\sum_{j=1}^m
+        \Omega_{\text{nc}}\left((\partial h(x_i))(\theta_j)\right)
+    \end{dmath*}
+    where $g$ is a strictly monotonically increasing function and
+    $\lambda_{\text{nc}} > 0$, a new representer theorem can be obtained by
+    constructing the new set
+    \begin{dmath*}[compact] 
+        \mcU = \sspan{ \Set{
+        (K(\cdot,x_i)k_{\Theta}(\cdot,\theta_j))_{i,j=1}^{n,m} | \forall  x_i
+        \in \inputspace , \forall \theta_j \in \hyperparameterspace }
+        \cup \Set{
+        (K(\cdot,x_i)(\partial_2 k_{\Theta})(\cdot,\theta_j))_{i,j=1}^{n,m} |
+        \forall  x_i \in \inputspace , \forall \theta_j \in
+        \hyperparameterspace }
+        }
+        \subset
+        \mcH_K.
+    \end{dmath*}
+    The proof is the same as \cref{theorem:representer_supervised} with the
+    new set $\mathcal{U}$ to obtain the expansion $h(x)(\theta) =
+    \sum_{i=1}^n\sum_{j=1}^m \alpha_{ij} k_{\inputspace}(x,
+    x_i)k_{\hyperparameterspace}(\theta, \theta_j) + \beta_{ij}k(x,
+    x_i)(\partial_2k_{\hyperparameterspace})(\theta, \theta_j)$.  For the
+    regularization notice that for a symmetric function $(\partial_1 k)(\theta,
+    \theta') = (\partial_2 k)(\theta', \theta)$. Hence $\inner{(\partial_1
+    k)(\cdot, \theta'), k(\cdot, \theta)}_{\mathcal{H}_k} = \inner{k(\cdot,
+    \theta'), (\partial_2 k)(\cdot, \theta)}_{\mathcal{H}_k}$ and $(\partial
+    k_{\theta'})(\theta) = (\adjoint{\partial} k_{\theta})(\theta')$ and
+    \begin{dmath*}
+        \norm{h}_{\mathcal{H}_K}^2
+        = \inner{h, h}_{\mathcal{H}_K}
+        = \sum_{i=1}^n\sum_{j=1}^m\sum_{i'=1}^n\sum_{j'=1}^m
+        \alpha_{ij}\alpha_{i'j'}k_{\inputspace}(x_i,
+        x_{i'})k_{\hyperparameterspace}(\theta_j, \theta_{j'}) +
+        \alpha_{ij}\beta_{i'j'}k_{\inputspace}(x_i, x_{i'})(\partial_2
+        k_{\hyperparameterspace})(\theta_j, \theta_{j'}) +
+        \alpha_{i'j'}\beta_{ij}k_{\inputspace}(x_i, x_{i'})(\partial_1
+        k_{\hyperparameterspace})(\theta_j, \theta_{j'}) +
+        \beta_{ij}\beta_{i'j'}k_{\inputspace}(x_i,
+        x_{i'})(\partial_1\partial_2k_{\hyperparameterspace})(\theta_j,
+        \theta_{j'})
+    \end{dmath*}
+    Eventually $(\partial h(x))(\theta) = \sum_{i=1}^n\sum_{j=1}^m \alpha_{ij}
+    k_{\inputspace}(x, x_i)(\partial_1 k_{\hyperparameterspace})(\theta,
+    \theta_j) + \beta_{ij}k(x,
+    x_i)(\partial_1\partial_2k_{\hyperparameterspace})(\theta, \theta_j)$.
+\end{proof}
+To prove \cref{theorem:representer_ocsvm}, the following lemmas are useful.
+\begin{lemma} \citep{carmeli10vector} \label{lemma:isometry}
+    Let $k_{\mcX}:\inputspace \times \inputspace \rightarrow \reals$,
+    $k_{\hyperparameterspace}:\hyperparameterspace \times \hyperparameterspace
+    \rightarrow \reals$ be two scalar-valued kernels and $K (\theta',\theta) =
+    k_{\hyperparameterspace}(\theta,\theta')I_{\mcH_{k_{\mcX}}}$.  Then $H_K$
+    is isometric to $\mcH_{k_{\mcX}} \otimes \mcH_{k_{\hyperparameterspace}}$
+    by means of the isometry $W: f \otimes g \in \mcH_{k_{\mcX}} \otimes
+    \mcH_{k_{\hyperparameterspace}} \mapsto ( \hyperparameter \mapsto
+    g(\hyperparameter)f) \in \mcH_K$.
+\end{lemma}
+%
+\begin{remark}
+    Given $k_{\mcX}:\inputspace \times \inputspace \rightarrow \reals$,
+    $k_{\hyperparameterspace}:\hyperparameterspace \times \hyperparameterspace
+    \rightarrow \reals$ two scalar-valued kernels, we define $K:(x,z) \in \mcX
+    \times \mcX \mapsto k_{\mcX}(x,z) I_{\mcH_{k_{\hyperparameterspace}}} \in
+    \mathcal{L}(\mcH_{k_{\hyperparameterspace}}  )$, $K':
+    (\hyperparameter,\hyperparameter')\in \hyperparameterspace \times
+    \hyperparameterspace \mapsto
+    k_{\hyperparameterspace}(\hyperparameter,\hyperparameter')
+    I_{\mcH_{k_{\mcX}}} \in \mathcal{L}(\mcH_{k_{\mcX}})$.
+    \cref{lemma:isometry} allows us to say that $\mcH_{K}$ and $\mcH_{K'}$ are
+    isometric by means of the isometry \begin{align}
+    \label{equation:v_definition} W: h \in \mcH_{K'} \mapsto (x \mapsto (\theta
+    \mapsto h(\theta)(x))) \in \mcH_K.  \end{align}
+\end{remark}
+
+\begin{lemma} \label{lemma:decompo_ortho}
+    Let $k_{\mcX}:\inputspace \times \inputspace \rightarrow \reals$,
+    $k_{\hyperparameterspace}:\hyperparameterspace \times \hyperparameterspace
+    \rightarrow \reals$  be two scalar-valued kernels and $K : (\theta,\theta')
+    \mapsto k_{\hyperparameterspace}(\theta,\theta')I_{\mcH_{k_{\mcX}}}$.  For
+    $\hyperparameter \in \hyperparameterspace$, define $K_{\hyperparameter}: f
+    \in \mcH_{k_{\mcX}} \mapsto \left ( \hyperparameter' \mapsto
+    K(\hyperparameter',\hyperparameter)f \right ) \in \mcH_K$.  It is easy to
+    see that $K_{\hyperparameter}^*$ is the evaluation operator
+    $K_{\hyperparameter}^*: h \in \mcH_K \mapsto h(\hyperparameter) \in
+    \mcH_{k_{\mcX}}$.  Then $\forall m \in \mathbb{N}^*, \forall
+    (\theta_j)_{j=1}^m \in \Theta^m$,
+    \begin{dmath} \label{equation:decompo_ortho}
+        \left ( +_{j=1}^m \Image(K_{\theta_j}) \right) \oplus \left
+        (\cap_{j=1}^m \Nullspace(K_{\theta_j} ^*) \right ) = \mcH_K
+    \end{dmath}
+\end{lemma}
+\begin{proof}
+    The statement boils down to proving that $\mcV :=\left ( +_{j=1}^m
+    \Image(K_{\theta_j}) \right)$ is closed in $\mcH_K$, since it is
+    straightforward that $\mcV ^{\perp} = \left (\cap_{j=1}^m \Nullspace
+    \left(K_{\theta_j} ^*\right ) \right)$.  Let  $\left(e_j \right)_{j=1}^k$
+    be an orthonormal basis of
+    $\sspan{\Set{(k_{\hyperparameterspace}(\cdot,\hyperparameter_j))_{j=1}^m}}
+    \subset \mcH_{k_{\hyperparameterspace}}$. Such basis can be obtained by
+    applying the Gram-Schmidt orthonormalization method to
+    $(k_{\hyperparameterspace}(\cdot,\hyperparameter_j))_{j=1}^m$. Then, $V =
+    \sspan{ \Set{ e_j \cdot f , 1 \leq j \leq k, f \in \mcH_{k_{\mcX}}}}$.
+    Notice also that $1 \leq j,l \leq k, \forall f,g \in \mcH_{k_{\mcX}}$,
+    \begin{dmath} \label{equation:scalar_tensor} \langle e_j \cdot f, e_l \cdot
+    g \rangle_{\mcH_K} = \langle e_j , e_l
+    \rangle_{\mcH_{k_{\hyperparameterspace}}} \cdot \langle f,g
+    \rangle_{\mcH_{k_{\mcX}}} \end{dmath} Let $(h_n)_{n \in \mathbb{N}^*}$ be a
+    sequence in $\mcV$ converging to some $h \in \mcH_K$. By definition, one
+    can find sequences $(f_{1,n})_{n \in \mathbb{N}^*},\ldots,(f_{k,n})_{n \in
+    \mathbb{N}^*} \in \mcH_{k_{\mcX}}$ such that $\forall n \in \mathbb{N}^*$,
+    $h_n = \sum_{j=1}^k e_j \cdot f_{n,j}$.  Let $p,q \in \mathbb{N}^*$. It
+    holds that, using the orthonormal property of $\left(e_j \right)_{j=1}^k$
+    and \cref{equation:scalar_tensor}, $\norm{h_p - h_q}_{\mcH_K}^2 = \norm{
+    \sum_{j=1}^k e_j (f_{j,p} - f_{j,q})}_{\mcH_K}^2 = \sum_{j=1}^k \norm{
+    f_{j,p} - f_{j,q}}_{\mcH_{k_{\mcX}}}^2$. $(h_n)_{n \in \mathbb{N}^*}$ being
+    convergent, it is a Cauchy sequence, thus so are the sequences
+    $(f_{j,n})_{n \in \mathbb{N}^*}$. But $\mcH_{k_{\mcX}}$ is a complete
+    space, so these sequences are convergent in $\mcH_{k_{\mcX}}$, and by
+    denoting $f_j = \lim_{n \to \infty} f_{j,n}$, one gets $h = \sum_{j=1}^k
+    e_k \cdot f_j$.  Therefore $h \in \mcV$, $\mcV$ is closed and the
+    orthogonal decomposition \cref{equation:decompo_ortho} holds.
+\end{proof}
+%
+\begin{lemma} \label{lemma:coercivity}
+    Let $k_{\mcX},k_{\hyperparameterspace}$ be two scalar kernels and $K :
+    (\theta,\theta') \mapsto
+    k_{\hyperparameterspace}(\theta,\theta')I_{\mcH_{k_{\mcX}}}$.  Let also $m
+    \in \mathbb{N}^*$ and $(\theta_j)_{j=1}^m \in \Theta^m$, and $\mcV = \left
+    ( +_{j=1}^m \Image(K_{\theta_j}) \right)$. Then  $I: \mcV \rightarrow
+    \reals$ defined as $I (h) =  \sum_{j=1}^m
+    \norm{h(\hyperparameter_j)}_{\mcH_{k_{\mcX}}}^2$ is coercive.
+\end{lemma}
+\begin{proof}
+    Notice first that if there exists $\theta_j$ such that
+    $k_{\hyperparameterspace}(\theta_j,\theta_j) = 0$, then
+    $\Image(K_{\theta_j})=0 $, so without loss of generality, we assume that
+    $k_{\hyperparameterspace}(\theta_j,\theta_j) > 0 $ ($1 \leq j \leq m$).
+    Notice that $I$ is the quadratic form associated to the $L:\mcH_K
+    \rightarrow \mcH_K$ linear mapping $ L (h) = \sum_{j=1}^m
+    K_{\hyperparameter_j}K_{\hyperparameter_j}^*$.  Indeed, $\forall h \in
+    \mcV$, $I(h) = \sum_{j=1}^m \langle
+    K_{\hyperparameter_j}^*h,K_{\hyperparameter_j}^*h \rangle_{\mcH_{k_{\mcX}}}
+    = \sum_{j=1}^m \langle h, K_{\hyperparameter_j}K_{\hyperparameter_j}^* h
+    \rangle_{\mcH_K} = \langle h , L h \rangle_{\mcH_K}$.  Moreover, $\forall 1
+    \leq j \leq m$, $K_{\hyperparameter_j}K_{\hyperparameter_j}^*$ has the same
+    eigenvalues as $K_{\hyperparameter_j}^*K_{\hyperparameter_j}$, and $\forall
+    f \in \mcH_{k_{\mcX}}$, $K_{\hyperparameter_j}^*K_{\hyperparameter_j} f =
+    k_{\hyperparameterspace}(\hyperparameter_j,\hyperparameter_j)f$, so that
+    the only possible eigenvalue is
+    $k_{\hyperparameterspace}(\hyperparameter_j,\hyperparameter_j)$.  Let $h
+    \in \mcV$, $h \neq 0$. Because of the \cref{equation:decompo_ortho}, $h$
+    cannot be simultaneously in all $\Nullspace(K_{\hyperparameter_j}^*)$, and
+    there exists $i_0$ such that $I(h) \geq
+    k_{\hyperparameterspace}(\hyperparameter_{i_0},\hyperparameter_{i_0})
+    \norm{h}_{\mcH_K}^2$.  Let $\gamma = \underset{1 \leq j \leq m}{\min}
+    k_{\hyperparameterspace}(\hyperparameter_{j},\hyperparameter_{j})$.  By
+    assumption $\gamma >0$, and it holds that $\forall h \in \mcV$, $I(h) \geq
+    \gamma \norm{h}_{\mcH_K}^2$, which proves the coercivity of $I$.
+\end{proof}
+\begin{proof} [Proof of \cref{theorem:representer_ocsvm}]
+    Let $K: (x,z) \in \mcX \times \mcX \mapsto k_{\mcX}(x,z)
+    I_{\mcH_{k_{\hyperparameterspace}}} \in
+    \mathcal{L}(\mcH_{k_{\hyperparameterspace}}  )$, $K':
+    (\hyperparameter,\hyperparameter') \in \hyperparameterspace \times
+    \hyperparameterspace \mapsto
+    k_{\hyperparameterspace}(\hyperparameter,\hyperparameter')
+    I_{\mcH_{k_{\mcX}}} \in \mathcal{L}(\mcH_{k_{\mcX}})$, and define
+    \begin{dmath*}
+        J \colon
+        \begin{cases}
+            \mcH_K \times \mcH_{k_{b}} & \to \mathbb{R}  \\
+            (h,t)  & \mapsto   \frac{1}{n} \displaystyle\sum_{i,j=1}^{n,m}
+            \frac{w_j}{\hyperparameter_j} \abs{t(\hyperparameter_j) -
+            h(x_i)(\hyperparameter_j)}_{+} + \displaystyle\sum_{j=1}^m w_j
+            \left (\norm{h(\cdot)(\hyperparameter_j)}_{\mcH_{k_{\mcX}}}^2 -
+            t(\hyperparameter_j) \right ) + \frac{\lambda}{2}
+            \norm{t}_{\mcH_{k_{b}}}^2.
+        \end{cases}
+    \end{dmath*}
+  Let $\mcV = W \left ( +_{j=1}^m \Image(K_{\theta_j}') \right) $ where
+  $W \colon \mcH_{K'} \to \mcH_K$ is defined in \cref{equation:v_definition}. Since $W$ is an isometry,
+  thanks to \cref{equation:decompo_ortho}, it holds that
+  $\mcV \oplus \mcV^{\perp} = \mcH_K$.
+    Let $(h,t) \in \mcH_K \times \mcH_{k_{b}}$, there exists unique $ h_{\mcV^{\perp}} \in \mcV^{\perp}$,
+$ h_{\mcV} \in \mcV$ such that $h = h_{\mcV} + h_{\mcV^{\perp}}$. Notice that
+  $J(h,t) = J(h_{\mcV} + h_{\mcV^{\perp}},t) = J(h_{\mcV},t)$
+since $\forall 1 \leq j \leq m, \forall x \in \mcX$,
+$h_{\mcV^{\perp}}(x)(\hyperparameter_j) = W^{-1}h_{\mcV^{\perp}}(\hyperparameter_j)(x) = 0$.
+Moreover, J is bounded by below so that its infinimum is well-defined, and
+  $\underset{(h,t) \in \mcH_K \times \mcH_{k_{b}}}{\inf} J(h,t) =
+  \underset{(h,t) \in \mcV \times \mcH_{k_{b}}}{\inf} J(h,t)$.
+Finally, notice  that $J$ is coercive on $\mcV \times \mcH_{k_{b}}$ endowed
+with the sum of the norm (which makes it a Hilbert space): if
+$(h_n,t_n)_{n \in \mathbb{N}^*} \in \mcV \times \mcH_{k_{b}}$ is such that
+$\norm{h_n}_{\mcH_K} + \norm{t_n}_{\mcH_{k_{b}}} \underset{n \to \infty}{\to} + \infty$,
+then either $(\norm{h_n}_{\mcH_K})_{n \in \mathbb{N}}$ or
+$(\norm{t_n}_{\mcH_{k_b}})_{n \in \mathbb{N}}$ has to diverge :
+\begin{itemize}
+  \item If $\norm{t_n}_{\mcH_{k_{b}}} \underset{n \to \infty}{\to} + \infty$,
+  since
+  $t_n(\theta_j) = \langle t_n, k_{b}(\cdot,\theta_j) \rangle_{\mcH_{k_{b}}}
+    \leq k_{b}(\theta_j,\theta_j) \norm{t_n}_{\mcH_{k_b}} \leq
+    \kappa_{b} \norm{t_n}_{\mcH_{k_b}}$ $(\forall 1 \leq j \leq m)$,
+  then $J(h_n,t_n) \geq
+    \frac{\lambda}{2} \norm{t_n}_{\mcH_{k_{b}}}^2 - \sum_{j=1}^m w_j t(\theta_j)
+    \underset{n \to \infty}{\to} + \infty$.
+  \item If $\norm{h_n}_{\mcH_{K}} \underset{n \to \infty}{\to} + \infty$,
+  according to \cref{lemma:coercivity}, $J(h_n,t_n)\underset{n \to \infty}{\to} + \infty $ as long
+  as all $w_j$ are strictly positive.
+\end{itemize}
+
+Thus $J$ is coercive, so that \citep[Proposition 11.15]{bauschke2011convex} allows to conclude that
+$J$ has a minimizer $(h^*,t^*)$ on $\mcV \times \mcH_{k_{b}}$.
+Then, in the same fashion as \cref{decompo_theorem}, define
+$\mcU_1 = \sspan{\Set{
+(K(\cdot,x_i)k_{\Theta}(\cdot,\theta_j))_{i,j=1}^{n,m} }}
+\subset \mcV$ and
+$\mcU_2 = \sspan{\Set{
+(k_{b}(\cdot,\theta_j))_{j=1}^{m} }}
+\subset \mcH_{k_{b}}$,
+and use the reproducing property to show that $(h^*,t^*) \in \mcU_1 \times \mcU_2$,
+so that there
+there exist $\left(\alpha_{ij}\right)_{i,j = 1}^{n,m}$ and
+$\left ( \beta_{j} \right )_{j=1}^m$ such that $\forall x,\hyperparameter \in \mcX
+    \times \hyperparameterspace$,
+     $h^*(x)(\hyperparameter) = \sum_{i,j=1}^{n,m} \alpha_{ij} k_{\mcX}(x,x_i)
+      k_{\hyperparameter}(\hyperparameter,\hyperparameter_j)$,
+      $t^*(\hyperparameter)  = \sum_{j=1}^{m} \beta_{j} k_{b}(\hyperparameter,\hyperparameter_j)$.
+%     h^*(x)(\hyperparameter) = \sum_{i,j=1}^{n,m} \alpha_{ij} k_{\mcX}(x,x_i)
+%     k_{\hyperparameterspace}(\hyperparameter,\hyperparameter_j)
+% \end{dmath*}
+% \begin{dmath*}[compact]
+%     t^*(\hyperparameter) = \sum_{j=1}^{m} \beta_{j} k_{\hyperparameterspace}(\hyperparameter,\hyperparameter_j)
+% \end{align*}
+
+    % Let $h^*,t^* \in \mcH_K \times \mcH_{k_{\hyperparameterspace}}$ be the solution of the
+    % minimization problem
+    % \begin{dmath*}
+    %     h^*,t^* \in \argmin_{h \in \mcH_K, t \in \mcH_{k_{\hyperparameterspace}}}
+    %     \frac{1}{nm} \sum_{i,j=1}^{n,m} \max (t(\hyperparameter_j) - h(x_i)(\hyperparameter_j),0) +
+    %     \sum_{j=1}^m \left ( \hyperparameter_j \norm{h(\cdot)(\hyperparameter_j)}_{\mcH_{k_{\mcX}}}^2 - \hyperparameter_j
+    %     t(\hyperparameter_j) \right ) + \lambda \norm{t}_{\mcH_{k_{\hyperparameterspace}}}^2
+    % \end{dmath*}
+    % Then there exist $\left(\alpha_{ij}\right)_{i,j = 1}^{n,m}$ and
+    % $\left ( \beta_{j} \right )_{j=1}^m$ such that $\forall x,\hyperparameter \in \mcX
+    %     \times (0,1)$,
+    % \begin{dmath*}[compact]
+    %     h^*(x)(\hyperparameter) = \sum_{i,j=1}^{n,m} \alpha_{ij} k_{\mcX}(x,x_i)
+    %     k_{\hyperparameterspace}(\hyperparameter,\hyperparameter_j)
+    % \end{dmath*}
+    % \begin{dmath*}[compact]
+    %     t^*(\hyperparameter) = \sum_{j=1}^{m} \beta_{j} k_{\hyperparameterspace}(\hyperparameter,\hyperparameter_j)
+    % \end{dmath*}
+    % Let $h^*,t^* \in \mcH_K \times \mcH_{k_{\hyperparameterspace}}$ be the solution of
+    % the aforementioned minimization problem. Since $\sspan{k_{\mcX}(\cdot,
+    %         x_i)k_{\hyperparameterspace}(\cdot,\hyperparameter_j)}$ is a closed subspace of the RKHS
+    % $H_{k_{\mcX} \times k_{\hyperparameterspace}}$ associated to the joint kernel
+    % $k_{\mcX}k_{\hyperparameterspace}$, one can decompose
+\end{proof}

@@ -1,0 +1,31 @@
+\begin{tikzpicture}
+    \begin{axis}[%
+        axis x line = center,
+        axis y line = center,
+        disabledatascaling,
+        axis equal image,
+        xlabel = {$y - h(x)$},
+        ylabel = {$v_{\theta}(y, h(x))$},
+        x label style={at={(axis description cs:1.0, 0.0)}, anchor=north},
+        ticks = none
+        ]
+        \addplot[orange, domain=-1:1, samples at={-1, 0, 1}]
+            {abs(.8 - (x < 0)) * abs(x)};
+        \draw
+            (-0.5, 0.1) coordinate (a)
+            (0, 0) coordinate (b)
+            (-0.5, 0) coordinate (c);
+        \draw
+            pic["$\theta - 1$", draw=black, -,dashed, angle eccentricity=1.2,
+                angle radius=2.3cm]
+            {angle=a--b--c};
+        \draw
+            (0.5, 0.4) coordinate (d)
+            (0, 0) coordinate (e)
+            (0.5, 0) coordinate (f);
+        \draw
+            pic["$\theta$", draw=black, -,dashed, angle eccentricity=1.2,
+                angle radius=2.3cm]
+            {angle=f--e--d};
+    \end{axis}
+\end{tikzpicture}

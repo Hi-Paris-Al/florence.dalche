@@ -1,0 +1,355 @@
+% section Extension of the framework to density level set estimation
+%
+% PLEASE DON'T TOUCH THE ACRONYMS (EVERY \ac, \acp, \acs, etc.) THEY WORK FINE!
+% IF YOU DON'T SEE THEM COMPILE WITH
+%
+% scons --kind=draft
+%
+% AND YOU SHOULD SEE THEM
+%
+% IF IT DOESNT COMPILE ON YOUR COMPUTER GET OVER IT AND DO NOT TOUCH THEM! THEY
+% ARE EXPANDED AT THE RIGHT MOMENT, WITH THE PLURAL FORM IF NEEDED ON COMPUTERS
+% WHERE IT COMPILES.
+%
+% NOTE: IF YOU DONT WANT TO USE THE COMMAND \ac, \acp, \acs, ... \ IT'S FINE.
+% JUST DONT TOUCH THE EXISTING ONE.
+%
+
+
+After introducing a few notations, we gradually define our goal by
+moving from single parameterized tasks (\cref{sec:single-task})  to \acs{ITL}
+(\cref{sec:inf-task}) through multi-task learning (\cref{sec:multi-task}).
+\paragraph{Notations:}
+%$\reals_{-}$ and $\naturals^*$ is the set of
+%non-positive reals and positive integers, respectively.
+$\indicator{S}$ is the indicator function of set $S$. We use the $\sum_{i,j=1}^{n,m}$
+shorthand for $\sum_{i=1}^n\sum_{j=1}^m$.  $|x|_+ = \max(x,0)$ denotes positive part.
+$\functionspace{\inputspace}{\outputspace}$ stands for the set of $\inputspace
+\rightarrow \outputspace$ functions.  Let $\Z$ be Hilbert space and $\L(\Z)$ be
+the space of $\Z \to \Z$ bounded linear operators.  Let $K: \inputspace \times
+\inputspace \to \L(\Z)$ be an operator-valued kernel, \acs{ie} $\sum_{i,j=1}^n
+\inner{z_i, K(x_i,x_j)z_j}_{\mcZ} \geq 0$ for all $n\in\Np$ and $x_1, \ldots,
+x_n \in \inputspace$ and $z_1, \ldots, z_n \in \Z$ and $K(x, z)=K(z, x)^*$ for
+all $x$, $z\in\inputspace$.  $K$ gives rise to the \acl{vv-RKHS}
+$\hypothesisspace_K = \lspan \Set{K(\cdot,x)z |\enskip x \in
+\inputspace,\enskip z \in \Z } \subset \functionspace{\inputspace}{\Z}$, where
+$\lspan\{\cdot\}$ denotes the closure of the linear span of its argument.  For
+futher details on \ac{vv-RKHS} the reader is referred to
+\citep{carmeli10vector}.
+%
+\subsection{Learning Parameterized Tasks}  \label{sec:single-task}
+%
+A \emph{supervised parametrized task} is defined as follows. Let $(X,Y)\in
+\inputspace \times \outputspace$ be a random variable with joint distribution
+$\probability_{X,Y}$ which is assumed to be fixed but unknown; we also assume
+that $\mcY \subset \reals$.
+We have access to $n$ \ac{iid} observations called training samples:
+$\trainingset\defeq((x_i,y_i))_{i=1}^{n} \sim \probability_{X,Y}^{\otimes n}$.
+Let $\hyperparameterspace$ be the domain of hyperparameters, and
+$\parametrizedcost{\hyperparameter}\colon\outputspace \times \outputspace \to
+\reals$ be a loss function  associated to $\hyperparameter \in
+\hyperparameterspace$. Let $\hypothesisspace \subset
+\functionspace{\inputspace}{\outputspace}$ denote our hypothesis class;
+throughout the paper $\hypothesisspace$ is assumed to be a Hilbert space with
+inner product $\inner{\cdot, \cdot}_{\hypothesisspace}$.  For a given
+$\hyperparameter$, the goal is to estimate the minimizer of the expected risk
+\begin{align}\label{equation:true_risk}
+    \parametrizedrisk(h) \defeq \expectation_{X,Y} [
+    \parametrizedcost{\hyperparameter}(Y, h(X))]
+\end{align}
+over $\hypothesisspace$, using the training sample $\trainingset$. This task
+can be addressed by solving the regularized empirical risk minimization problem
+\begin{align}\label{equation:emp_risk_reg}
+    \min_{h \in \hypothesisspace} \empiricalrisk^{\hyperparameter}( h) +
+     \Omega(h),
+\end{align}
+where $\parametrizedempiricalrisk(h) \defeq \frac{1}{n}\sum_{i=1}^n
+\parametrizedcost{\hyperparameter}(y_i,h(x_i))$ is the empirical risk and
+$\regularizer: \hypothesisspace \to \reals$ is a regularizer.
+ % and $\lambda>0$
+% is a real parameter.
+Below we give three examples.
+%
+\paragraph{\acl{QR}:}
+In this setting $\hyperparameter \in
+\openinterval{0}{1}$. For a given hyperparameter $\hyperparameter$, in \acl{QR}
+the goal is to predict the $\hyperparameter$-quantile of the real-valued output
+conditional distribution $\probability_{Y|X}$. The task can be tackled
+using the pinball loss \citep{koenker1978regression} defined in
+\cref{equation:pinball_loss} and illustrated in \cref{figure:pinball}.
+%
+\begin{align} \label{equation:pinball_loss}
+     \parametrizedcost{\hyperparameter}(y, h(x)) &= \abs{\hyperparameter -
+     \indicator{\reals_{-}}(y - h(x))}\abs{y - h(x)}, \\ \regularizer(h) &=
+     \tfrac{\lambda}{2}\norm{h}^2_{\hypothesisspace}\condition{$\lambda > 0$.}
+     \nonumber
+     % ,
+     % \\
+     % \regularizer_{\lambda}(h)&=\frac{\lambda}{2}\norm{h}^2_{\hypothesisspace}.\nonumber
+\end{align}
+%
+\paragraph{\acl{CSC}:}
+Our next example considers binary classification ($\outputspace=\Set{-1,1}$)
+where a (possibly) different cost is associated with each class, as it is
+often the case in medical diagnosis. The sign
+of $h\in\hypothesisspace$ yields the estimated class and in cost-sensitive
+classification one takes
+%\ms{idem notation $V$}
+\begin{align}
+    \parametrizedcost{\theta}(y, h(x)) &= \abs{\tfrac{1}{2}(\theta + 1) -
+    \indicator{\Set{-1}}(y)}\abs{1 - yh(x)}_{+}, \\ \regularizer(h) &=
+    \tfrac{\lambda}{2}\norm{h}^2_{\hypothesisspace} \condition{$\lambda > 0$.}
+    \nonumber
+    % , \\
+    % \regularizer_{\lambda}(h) &= \frac{\lambda}{2}\norm{h}^2_{\hypothesisspace}.
+\end{align}
+The  $\theta\in\closedinterval{-1}{1}$ hyperparameter captures the trade-off
+between the importance of correctly classifying the samples having $-1$ and $+1$ labels.
+When $\theta$ is close to $-1$, the obtained $h$ focuses on classifying well
+class $-1$, and vice-versa. Typically, it is desirable for a physician to
+choose \emph{a posteriori} the value of the hyperparameter at which he wants
+to predict. Since this cost can rarely be considered to be fixed, this
+motivates to learn one model giving access to all hyperparameter
+values.\par
+%
+\paragraph{\acl{DLSE}:} Examples of parameterized tasks can also be found in the unsupervised setting.
+For instance in outlier detection, the goal is to separate outliers
+from inliers. A classical technique to tackle this task is \ac{OCSVM}
+\citep{scholkopf2000new}. \ac{OCSVM} has a free parameter
+$\hyperparameter\in(0, 1]$, which can be proven to be an upper bound on the
+fraction of outliers. When using a Gaussian kernel with a bandwidth tending
+towards zero, \acs{OCSVM} consistently estimates density level sets
+\citep{vert2006consistency}.  This unsupervised learning problem can be
+empirically described by the minimization of a regularized empirical risk
+$\empiricalrisk^{\hyperparameter}(h,t) +     \Omega(h)$, solved  \emph{jointly} over
+$h\in\hypothesisspace$ \emph{and}
+$t\in\reals$ with
+\begin{align*}%\label{equation:one_class_hinge_loss}
+    \parametrizedcost{\hyperparameter}(t, h(x)) &= -t +
+    \frac{1}{\hyperparameter}\abs{t - h(x)}_+,& \regularizer(h) &=
+    \tfrac{1}{2}\norm{h}^2_{\hypothesisspace}. \nonumber
+\end{align*}
+\subsection{Solving a Finite Number of Tasks as Multi-Task Learning} \label{sec:multi-task}
+In all the  aforementioned problems, one is rarely interested in the choice of
+a single hyperparameter value ($\hyperparameter$) and associated risk
+$\left(\empiricalrisk^{\hyperparameter}\right)$, but rather in the joint
+solution of multiple tasks. The naive approach of solving the different tasks
+independently can easily lead to inconsistencies. A principled way of solving
+many parameterized tasks has been cast as a \ac{MTL} problem
+\citep{Evgeniou2005} which takes into account the similarities between tasks
+and helps providing consistent solutions. For example it is possible to encode
+the similarities of the different tasks in \ac{MTL} through an explicit constraint function
+\citep{ciliberto2017consistent}.
+%
+In the current work, the similarity between tasks is designed in an implicit way
+through the use of a kernel on the hyperparameters. Moreover, in contrast to \ac{MTL},
+in our case the input space and the training samples are the same for each task; a task is specified by
+a value of the hyperparameter. This setting is sometimes refered to as multi-output learning
+\citep{Alvarez2012}.
+% The link between multi-output and multi-task on different training set is
+% detailed in \citep{ciliberto2017consistent}.
+\par
+%
+Formally, assume that we have $p$ tasks
+described by parameters $(\theta_j)_{j=1}^p$. The idea of multi-task learning
+is to minimize the sum of the local loss functions
+$\empiricalrisk^{\hyperparameter_j}$, \ac{ie}
+\begin{align*}
+  \argmin_{h} \displaystyle\sum\nolimits_{j=1}^p
+  \empiricalrisk^{\hyperparameter_j}(h_j) + \Omega(h),
+\end{align*}
+where the individual tasks are modelled by the real-valued $h_j$ functions,
+%($j=1,\ldots,p$),
+the overall $\reals^p$-valued model is the vector-valued function
+$h \colon x\mapsto(h_1(x),\ldots,h_p(x))$, and $\Omega$ is a regularization term
+encoding similarities between tasks.
+
+It is instructive to consider two concrete examples:
+\begin{itemize}[labelindent=0em,leftmargin=*,topsep=0cm,partopsep=0cm,
+                parsep=2mm,itemsep=0cm]
+    \item In joint quantile regression one can use the regularizer to
+    encourage that the predicted conditional quantile estimates for two
+    similar quantile values are similar. This idea forms the basis of the
+    approach proposed by \citet{sangnier2016joint} who formulates the joint
+    quantile regression problem in a vector-valued Reproducing Kernel Hilbert
+    Space with an appropriate decomposable kernel that encodes the links
+    between the tasks. The obtained solution shows less quantile curve
+    crossings compared to estimators not exploiting the dependencies of the
+    tasks as well as an improved accuracy.
+    \item A multi-task version of \ac{DLSE} has recently been presented by
+    \citet{glazer2013q} with the goal of obtaining nested density level sets
+    as $\theta$ grows. Similarly to joint quantile regression, it is crucial to
+    take into account the similarities of the tasks in the joint model to
+    efficiently solve this problem.
+\end{itemize}
+
+% \rb{In the present context
+% the training set is the same for each task; a task meaning here training for
+% a different hyperparamter value. This setting is sometimes refered to as multi-output learning
+% \citep{Alvarez2012}. The link between multi-ouput and multi-task on different training set is
+% detailed in \citep{maurer2016vector,ciliberto2017consistent}.}
+
+
+
+
+% In \citep{glazer2013q}, a multi-task version of \ac{DLSE} is presented, with a
+% focus on providing nested level sets, that is as $\theta$ grows, the estimated
+% level sets should be included in each other. Having a joint model is then crucial to
+% enforce this property.
+%In order to be able to solve parametrized tasks \emph{simultaneously} over a
+%continuum of hyperparameters, we formulate a novel general setting, called
+%Infinite-Task Learning, that generalizes the framework of Parametric-Task
+%Learning \citep{takeuchi2013parametric}.
+
+% Considering now an infinite number of tasks, \citet{takeuchi2013parametric} have introduced and studied the task of learning simultaneously linear models devoted to a continuum of hyperparameter values notably under the assumption that the loss is a piece-wise linear function of the hyperparameter.  Linear models are learned under $\ell-1$ This work extends
+
+\subsection{Towards Infinite Task Learning} \label{sec:inf-task}
+In the following, we propose a novel framework called Infinite Task Learning in
+which we learn a function-valued function $h \in \functionspace{\inputspace}{
+\functionspace{\hyperparameterspace}{\outputspace}}$. Our goal is to be able to
+handle new tasks after the learning phase and thus, not to be limited to given
+predefined values of the hyperparameter. Regarding this goal, our framework
+generalizes the \acl{PTL} approach introduced by
+\citet{takeuchi2013parametric}, by allowing a wider class of models and relaxing the
+hypothesis of piece-wise linearity of the loss function.
+% Given $\alpha_\theta$ the parameter of a linear model
+% $h_\theta(x)=\inner{ \alpha_{\theta},x}$ tackling the task $\theta$, the
+% \ac{PTL} approach relies on parametric programming to alternate between the
+% minimization of an empirical risk regularized by some inter-task term $\int
+% \inner{\alpha_{\theta}, D \alpha_{\theta}}\mathrm{d}\theta$ and learning the
+% metric $D$, which only works for piecewise-linear losses.
+%  add a regularizing inter-task term $\int
+% \adjoint{\alpha}_\theta D \alpha_{\theta}\mathrm{d}\theta$ to the empirical
+% risk. Then \emph{using the piecewise linearity of the loss} \ac{PTL},
+% alternates the minimization of risk on the continuum of tasks, using a
+% solution-path algorithm, and learning the metric $D$.
+%If $\alpha_j$ is the
+%parameter vector   The
+%\acs{PTL} approach consits in regularizing between the tasks
+% This approach is computationally much more intensive than our direct
+% approach.
+%
+Moreover a nice byproduct of this \acs{vv-RKHS} based approach is
+that one can benefit from the functional point of view, design new regularizers
+and impose various constraints on the whole continuum of tasks, \acs{eg},
+\begin{itemize}[labelindent=0em,leftmargin=*,topsep=0cm,partopsep=0cm,
+                parsep=2mm,itemsep=0cm]
+    \item The continuity of the $\hyperparameter \mapsto h(x)(\hyperparameter)$
+    function is a natural desirable property: for a given input $x$, the
+    predictions on similar tasks should also be similar.
+    \item Another example is to impose a shape constraint in \ac{QR}:
+     the conditional quantile should be increasing \ac{wrt} the
+    hyperparameter $\theta$. This requirement can be imposed through the
+    functional view of the problem.
+    \item In \ac{DLSE}, to get nested level sets, one would want that for all $
+    x \in \mcX$, the decision function $\theta \mapsto
+    \indicator{\reals_{+}}(h(x)(\hyperparameter) - t(\hyperparameter))$ changes
+    its sign only once.
+\end{itemize}
+To keep the presentation simple, in the sequel we are going to focus on
+\ac{ITL} in the  supervised setting; unsupervised tasks can be handled
+similarly. \par
+%
+Assume that $h$ belongs to some space $\hypothesisspace \subseteq
+\functionspace{\inputspace}{
+\functionspace{\hyperparameterspace}{\outputspace}}$ and introduce an
+integrated loss function
+\begin{align}\label{equation:integrated_cost0}
+    \cost(y, h(x)) \defeq \displaystyle\int_{\hyperparameterspace}
+    \hcost(\hyperparameter,y,
+    h(x)(\hyperparameter))\mathrm{d}\mu(\hyperparameter),
+\end{align}
+where  the local loss $\hcost \colon \hyperparameterspace \times \outputspace
+\times \outputspace \to \reals$ denotes $\hcost_{\hyperparameter}$ seen as a
+function of three variables including the hyperparameter and $\mu$ is a
+probability measure on $\hyperparameterspace$ which encodes the importance of
+the prediction at different hyperparameter values. Without prior information
+and for compact $\hyperparameterspace$, one may consider $\mu$ to be uniform.
+The true risk reads then
+\begin{align}\label{equation:h-objective}
+   R(h) &\defeq \expectation_{X,Y} \left[ \cost(Y,
+    h(X))\right].
+    % &= \expectation_{X,Y} \left[ \int_{\hyperparameterspace}
+    % \hcost(\hyperparameter,y,
+    % h(x)(\hyperparameter))\mathrm{d}\mu(\hyperparameter)\right].
+\end{align}
+Intuitively, minimizing the expectation of the integral over $\hyperparameter$
+in a rich enough space corresponds to searching for a pointwise minimizer $x
+\mapsto h^{*}(x)(\theta)$ of the parametrized tasks introduced in
+\cref{equation:true_risk} with, for instance, the implicit space constraint
+that $\theta \mapsto h^{*}(x)(\theta)$ is a continuous function for each input
+$x$.
+We show in \cref{proposition:generalized_excess_risk} that this is
+precisely the case in \ac{QR}.\par
+Interestingly, the empirical counterpart of the true risk minimization can now
+be considered with a much richer family of penalty terms:
+{\small\begin{align}\label{equation:h-objective-empir}
+    \min_{h\in \hypothesisspace} \empiricalrisk(h) + \Omega(h), \quad
+    \empiricalrisk(h) \defeq \frac{1}{n} \sum\nolimits_{i=1}^n \cost(y_i, h(x_i)).
+\end{align}}
+%\begin{dseries}[compact,spread=0pt]\label{equation:h-objective-empir}
+    %\begin{math}
+        %\min_{h\in \hypothesisspace} \empiricalrisk(h) + \Omega(h), \quad
+    %\end{math}
+    %\begin{math}
+        %\empiricalrisk(h) \defeq \frac{1}{n} \sum_{i=1}^n \cost(y_i, h(x_i)).
+    %\end{math}
+%\end{dseries}
+Here, $\Omega(h)$ can be a weighted sum of various penalties
+\begin{itemize}[labelindent=0em,leftmargin=*,topsep=0cm,partopsep=0cm,
+                parsep=2mm,itemsep=0cm]
+    \item imposed directly on $(\hyperparameter,x) \mapsto
+    h(x)(\hyperparameter)$, or
+    \item integrated constraints on either $\hyperparameter \mapsto
+    h(x)(\hyperparameter)$ or $x \mapsto h(x)(\hyperparameter)$ such as
+    %\begin{align*}
+        %&\int_{\inputspace} \Omega_1(\hyperparameter \mapsto
+        %h(x)(\hyperparameter))\mathrm{d}\probability(x)\text{ or},\\
+        %&\int_{\hyperparameterspace} \Omega_2(x \mapsto
+        %h(x)(\hyperparameter))\mathrm{d}\mu(\hyperparameter).
+    %\end{align*}
+    {\small\begin{align*}
+        \int_{\inputspace} \Omega_1(
+        h(x)(\cdot))\mathrm{d}\probability(x)\,\text{\normalsize
+        or}\, \int_{\hyperparameterspace} \Omega_2(
+        h(\cdot)(\hyperparameter))\mathrm{d}\mu(\hyperparameter)
+    \end{align*}}
+    which allow the property enforced by $\Omega_1$ or
+    $\Omega_2$ to hold pointwise on $\inputspace$ or $\hyperparameterspace$
+    respectively.
+\end{itemize}
+It is worthwhile to see a concrete example before turning to the numerical
+solution (\cref{sec:III}): in quantile regression, the monotonicity assumption of the
+$\hyperparameter \mapsto h(x)(\hyperparameter)$ function can be encoded by
+choosing $\Omega_1$ as
+\begin{align*}
+    %\Omega_1(f) =  \lambda_{nc}\int_{\hyperparameterspace}\abs{ -\frac{\partial
+    %f}{\partial \hyperparameter} (\hyperparameter)}_+
+    %\mathrm{d}\mu(\hyperparameter)
+    \Omega_1(f) =  \lambda_{nc}\int_{\hyperparameterspace}\abs{ -(\partial f)
+    (\hyperparameter)}_+ \mathrm{d}\mu(\hyperparameter).
+\end{align*}
+%
+Many different models ($\hypothesisspace$) could be applied to solve this
+problem.  In our work we consider Reproducing Kernel Hilbert Spaces as they
+offer a simple and principled way to define regularizers by the
+appropriate choice of kernels and exhibit a significant flexibility.
+%
+
+%where   $\Omega_1
+ %   \begin{align}\label{equation:non_crossing}
+ %   \Omega_{\text{nc}}(h) \defeq
+% TO DO:  where typically $\Omega_1: \hypothesisspace \rightarrow \mathbb{R}^+$ is a penalty on the complexity of $h$ and $\omega_2$
+ %   \lambda_{nc}\int_{\inputspace}\int_{\hyperparameterspace}\abs{
+ %   -\frac{\partial h}{\partial \hyperparameter}
+%    (x)(\theta)}_+d\mu(\hyperparameter)d\probability(x)
+%\end{align}
+%Having a functional model in $\theta$ also allows for a finer modelization of
+%constraints given by the problem considered. In \ac{QR}, one knows that for
+%each $x \in \mcX$, conditional quantiles of different level are not supposed to cross, and
+%the resulting function of $\theta$ should be non-decreasing. Being able to
+%differentiate the model function is then a key point in ensuring these shape constraints
+%are respected, as explained in \cref{paragraph:shape_constraints}.
+% In the next section we detail how we tackle \cref{equation:h-objective} in
+% terms of the additional integral over $\hyperparameter$ involved, and the
+% hypothesis class $\hypothesisspace$.

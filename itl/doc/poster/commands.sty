@@ -1,0 +1,229 @@
+% Addedum Florence (to be deleted)
+% sera effacé , je n'ai pas trouve les shortcuts
+% Romain: on utilise \mcX au lieu de \bmX (mc pour mathcal)
+%         \empiricalrisk au lieu de \emprisk
+%         ne change rien, je m'occupe du binding a la fin et de corriger les
+%         inconsistances.
+%
+%         NB: de préférence on utilise \inputspace au lieu de \mcX et
+%         \outputspace au lieux de \mcY oiyr bien spécifier de quoi on parle.
+%
+%         egalement une nouvelle commande \sampledcost et \sampledempiricalrisk
+%         pour les version avec tilde. je te met une version shortcut plus
+%         courte que je supprimerai a la fin: \semprisk et \scost
+%
+% TODO: Delete the following commands for camera ready.
+\newcommand{\bmX}{\inputspace} % --> use \imputspace
+\newcommand{\bmY}{\outputspace} % --> use \outputspace
+\newcommand{\emprisk}{\empiricalrisk}
+\newcommand{\scost}{\sampledcost}
+\newcommand{\semprisk}{\sampledempiricalrisk}
+\newcommand{\hcost}{\maw{v}}
+%Zoltan:
+\newcommand{\Z}{\mcZ}%v-RKHS: output space
+\renewcommand{\L}{\mcL}%bounded lin op
+\newcommand{\Zp}{\relatives^+}%integers
+%% attention I've changed
+%
+%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand\maw[1]{\ensuremath{#1}\xspace}
+\newcommand{\operator}[1]{{\maw{\mathbf{\mathrm{#1}\;}}}}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Sets and spaces
+%
+\newcommand\mcX{\maw{\mathcal{X}}}
+\newcommand\mcY{\maw{\mathcal{Y}}}
+\newcommand\mcH{\maw{\mathcal{H}}}
+\newcommand\mcT{\maw{\mathcal{T}}}
+\newcommand\mcV{\maw{\mathcal{V}}}
+\newcommand\mcU{\maw{\mathcal{U}}}
+\newcommand\mcF{\maw{\mathcal{F}}}
+\newcommand\mcP{\maw{\mathcal{P}}}
+\newcommand\mcS{\maw{\mathcal{S}}}
+\newcommand\mcZ{\maw{\mathcal{Z}}}
+\newcommand\mcL{\maw{\mathcal{L}}}
+\newcommand\reals{\maw{\mathbb{R}}}
+\newcommand\naturals{\maw{\mathbb{N}}}
+\newcommand\relatives{\maw{\mathbb{Z}}}
+\newcommand\extendedreals{\maw{\overline{\mathbb{R}}}}
+\newcommand\hypothesisspace{\maw{\mcH}}
+\newcommand\inputspace{\maw{\mcX}}
+\newcommand\outputspace{\maw{\mcY}}
+\newcommand\hyperparameterspace{\maw{\Theta}}
+\newcommand\functionspace[2]{\maw{\mcF\left(#1;\,#2\right)}}
+\newcommand\openinterval[2]{\maw{\left(#1,\,#2\right)}}
+\newcommand\closedinterval[2]{\maw{\left[#1,\,#2\right]}}
+\newcommand\leftopeninterval[2]{\maw{\left(#1,\,#2\right]}}
+\newcommand\rightopeninterval[2]{\maw{\left[#1,\,#2\right)}}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% General math
+%
+\let\Phi\phi
+\let\phi\varphi
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}
+\DeclarePairedDelimiter\inner{\langle}{\rangle}
+\DeclarePairedDelimiter\pairing{(}{)}
+\newcommand{\sequence}[2]{\maw{\left({#1}_{#2}\right)_{#2\in\naturals}}}
+\newcommand{\family}[3]{\maw{\left({#1}_{#2}\right)_{#2\in#3}}}
+\newcommand{\derivative}[2]{\frac{\partial {#1}}{\partial {#2}}}
+\newcommand{\lderivative}[2]{\frac{\partial}{\partial {#2}} {#1}}
+\newcommand{\xdownarrow}[1]{%
+  {\left\downarrow\vbox to #1{}\right.\kern-\nulldelimiterspace}
+}
+\DeclareMathOperator{\image}{\operator{im}}
+\DeclareMathOperator{\Image}{\operator{Im}}
+\DeclareMathOperator{\nullspace}{\operator{ker}}
+\DeclareMathOperator{\Nullspace}{\operator{Ker}}
+\DeclareMathOperator{\dom}{\operator{dom}}
+\DeclareMathOperator{\Dom}{\operator{Dom}}
+\DeclareMathOperator{\codom}{\operator{codom}}
+\DeclareMathOperator{\Codom}{\operator{CoDom}}
+\newcommand{\ec}{\mathrm{e}\mkern1mu}
+\newcommand{\iu}{{\mathrm{i}\mkern1mu}}
+\DeclareMathOperator{\intrinsicdimension}{\operator{int\,dim}}
+\DeclareMathOperator{\Intrinsicdimension}{\operator{Int\,Dim}}
+\DeclareMathOperator{\dimension}{\operator{dim}}
+\DeclareMathOperator{\Dimension}{\operator{Dim}}
+\newcommand{\derivativeat}[3]{\left. \frac{\partial {#1}}{\partial {#2}}
+\right|_{\scriptscriptstyle {#2}={#3}}}
+\newcommand{\lderivativeat}[3]{\left.  \frac{\partial}{\partial {#2}} {#1}
+\right|_{\scriptscriptstyle {#2}={#3}}}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Rank}{Rank}
+\DeclareMathOperator{\directsum}{\bigoplus}
+\DeclareMathOperator*{\Directsum}{\bigoplus}
+\newcommand\dual[1]{\widehat{#1}}
+\newcommand\conj[1]{\maw{\overline{#1}}}
+\newcommand\converges[2]{\maw{\xrightarrow[#2]{\text{#1}}}}
+\newcommand\transpose[1]{\maw{{#1}^{\mkern-1.5mu\mathsf{T}}}}
+\newcommand\adjoint[1]{\maw{{#1}^{*}}}
+\newcommand\power[2]{\maw{{#1}^{#2}}}
+\newcommand{\indicator}[1]{\maw{\mathbbm{1}_{#1}}}
+%\newcommand{\defeq}{\maw{\overset{\underset{\text{\tiny\acs{def}}}{}}{=}}}
+\newcommand{\defeq}{\maw{\colonequals}}
+%
+\makeatletter
+\let\oldabs\abs
+\def\abs{\@ifstar{\oldabs}{\oldabs*}}
+%
+\let\oldnorm\norm
+\def\norm{\@ifstar{\oldnorm}{\oldnorm*}}
+\makeatother
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Probability
+%
+\newcommand{\expectation}{\maw{\mathbf{{E}}}}
+\newcommand{\variance}{\maw{\mathbf{{Var}}}}
+\newcommand{\covariances}{\maw{\mathbf{Cov}}}
+\newcommand{\probability}{\maw{\mathbf{{P}}}}
+\newcommand{\Lebesgue}{\maw{\mathbf{Leb}}}
+\newcommand{\Haar}{\maw{\mathbf{Haar}}}
+\newcommand{\Radon}{\maw{\mathbf{Rad}}}
+\newcommand{\MGF}{\maw{\mathbf{MGF}}}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Operators
+%
+\DeclareMathOperator*{\argmin}{\operator{arg\,min}}
+\DeclareMathOperator*{\argmax}{\operator{arg\,max}}
+\DeclareMathOperator{\trace}{\operator{Tr}}
+\DeclareMathOperator*{\sign}{\operator{sign}}
+\DeclareMathOperator{\lspan}{\operator{\overline{span}}}
+\DeclareMathOperator{\sspan}{\operator{span}}
+\DeclareMathOperator{\Jacobian}{\operator{J}}
+\DeclareMathOperator{\vectorize}{\operator{vec}}
+\DeclareMathOperator*{\esssup}{\operator{ess\,sup}}
+\newcommand{\FourierTransform}[1]{\operator{F}\left[#1\right]}
+\newcommand{\InverseFourierTransform}[1]{
+    \operator{\inverse{F}}\left[#1\right]}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Constants
+%
+\newcommand\hyperparameter{\maw{\theta}}
+\newcommand\inputdata{\maw{x}}
+\newcommand\outputdata{\maw{y}}
+\newcommand\inputrandom{\maw{\mathrm{X}}}
+\newcommand\outputrandom{\maw{\mathrm{Y}}}
+\newcommand\risk{{\maw{R}}}
+\newcommand\sampledrisk{{\maw{\widetilde{\risk}}}}
+\newcommand\parametrizedrisk{{\maw{\risk^{\hyperparameter}}}}
+\newcommand\sampledparametrizedrisk{{\maw{\sampledrisk^{\hyperparameter}}}}
+\newcommand\regularizer{\maw{\Omega}}
+\newcommand\trainingset{\maw{\mcS}}
+\newcommand\empiricalrisk{\maw{R_{\trainingset}}}
+\newcommand\parametrizedempiricalriskrisk{
+    \maw{\empiricalrisk^{\hyperparameter}}}
+\newcommand\sampledempiricalrisk{\maw{\widetilde{\risk}_{\trainingset}}}
+\newcommand\parametrizedempiricalrisk{\maw{R_{\trainingset}^{\hyperparameter}}}
+\newcommand\parametrizedsampledempiricalrisk{\maw{
+    \sampledempiricalrisk^{\hyperparamter}}}
+\newcommand\loss{\maw{\ell}}
+\newcommand\cost{\maw{V}}
+\newcommand\parametrizedcost[1]{\maw{v_{#1}}}
+\newcommand\sampledcost{\maw{\widetilde{\cost}}}
+\newcommand\measure{\maw{\mu}}
+\newcommand\groupoperation{\maw{\star}}
+\newcommand\inverse[1]{\maw{{#1}^{-1}}}
+%\newcommand\minimizer[1]{\maw{\underset{\bar{}}{#1}}}
+\newcommand\minimizer[1]{\maw{#1^{*}}}
+\newcommand\truerisk{{\operator{R}}}
+\newcommand{\tildephi}[1]{\widetilde{\phi}(#1)}
+\newcommand{\tildePhi}[1]{\widetilde{\Phi}(#1)}
+\newcommand{\tildeW}[1]{\widetilde{W}}
+\newcommand{\tildeH}[1]{\widetilde{\mathcal{H}}}
+\newcommand{\tildef}[1]{\widetilde{f}}
+\newcommand{\tildeK}[1]{\widetilde{K}}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Equations and Theorems
+%
+% \newtheorem{theorem}{Theorem}[section]
+% \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem*{proposition}{Proposition}
+% \newtheorem{corollary}[theorem]{Corollary}
+% \newtheorem{remark}{Remark}
+% \newtheorem{example}[theorem]{Example}
+% \newtheorem{definition}{Definition}[section]
+% \newtheorem*{sproof}{Sketch of the proof}
+% \makeatletter
+% \let\cref@old@eq@setnumberOld\eq@setnumber
+% \def\eq@setnumber{%
+% \cref@old@eq@setnumberOld%
+% \cref@constructprefix{equation}{\cref@result}%
+% \protected@xdef\cref@currentlabel{%
+% [equation][\arabic{equation}][\cref@result]\p@equation\eq@number}}
+% \makeatother
+% \newtheorem{assumption}{Assumption}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Notes
+%
+% \ifthenelse{\isundefined{\final}\AND\isundefined{\nocomment}}{
+%     \newcommand{\al}[1]{\textcolor{Magenta}{\textbf{AL:} #1}}
+%     \newcommand{\ms}[1]{\textcolor{Blue}{\textbf{MS:} #1}}
+%     \newcommand{\rb}[1]{\textcolor{Green}{\textbf{RB:} #1}}
+%     \newcommand{\fa}[1]{\textcolor{Purple}{\textbf{FA:} #1}}
+%     \newcommand{\zs}[1]{\textcolor{Orange}{\textbf{ZS:} #1}}
+%     \newcommand{\refmissing}{\textcolor{Red}{add ref.}}
+%     \newcommand{\TODO}{\textcolor{Red}{TODO}}
+%     \newenvironment{aproof}[1][\proofname]{%
+%         \proof[\color{gray} #1]\color{gray}%
+%     }{\endproof}
+% }{
+%     \newcommand{\rb}[1]{}
+%     \newcommand{\ms}[1]{}
+%     \newcommand{\fa}[1]{}
+%     \newcommand{\al}[1]{}
+%     \newcommand{\refmissing}{}
+%     \newcommand{\TODO}{}
+%     \newenvironment{aproof}[1][\proofname]{}{}
+% }
+% \newcommand{\ignore}[1]{}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Shortcuts
+%
+% Nabib style
+%
+% \newcommand{\seet}[1]{see \cref{#1}}
+% \newcommand{\Seet}[1]{See \cref{#1}}
+% \newcommand{\seep}[1]{(see \cref{#1})}
+% \newcommand{\Seep}[1]{(See \cref{#1})}

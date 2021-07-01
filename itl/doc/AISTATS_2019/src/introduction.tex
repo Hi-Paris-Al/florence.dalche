@@ -1,0 +1,299 @@
+% section Extension of the framework to density level set estimation
+%
+% PLEASE DON'T TOUCH THE ACRONYMS (EVERY \ac, \acp, \acs, etc.) THEY WORK FINE!
+% IF YOU DON'T SEE THEM COMPILE WITH
+%
+% scons --kind=draft
+%
+% AND YOU SHOULD SEE THEM
+%
+% IF IT DOESNT COMPILE ON YOUR COMPUTER GET OVER IT AND DO NOT TOUCH THEM! THEY
+% ARE EXPANDED AT THE RIGHT MOMENT, WITH THE PLURAL FORM IF NEEDED ON COMPUTERS
+% WHERE IT COMPILES.
+%
+% NOTE: IF YOU DONT WANT TO USE THE COMMAND \ac, \acp, \acs, ... \ IT'S FINE.
+% JUST DONT TOUCH THE EXISTING ONE.
+%
+
+%\emph{Simultaneous} minimization of loss functions determined by a
+%hyperparameter is of fundamental interest in machine learning and statistics.
+Several fundamental problems in machine learning and statistics can be phrased
+as the minimization of a loss function described by a hyperparameter.
+%\citep{quinn2014least} continuous
+%\citep{takeuchi2013parametric}.
+The hyperparameter might capture numerous aspects of the problem:
+\begin{inparaenum}[(i)]
+    \item the tolerance \acs{wrt} outliers as the  $\epsilon$-insensitivity in
+    \ac{SVR} \citep{vapnik1997support},
+    \item importance of smoothness or sparsity such as the weight of the
+    $l_2$-norm in Tikhonov regularization \citep{tikhonov77solution},
+    $l_1$-norm in \acs{LASSO} \citep{tibshirani1996regression}, or more general
+    structured-sparsity inducing norms \citep{bach12optimization},
+    \item \ac{DLSE}, see for example one-class support vector machines
+    \ac{OCSVM},
+    \item confidence as examplified by \ac{QR}, or
+    \item importance of different decisions as implemented by \ac{CSC}.
+\end{inparaenum}
+
+%For some of these problems such as quantile regression, cost-sensitive
+%classification or density levet set estimation, one is usually interested by
+%solving the parametrized task for several hyperparameter values. Multi-task
+%learning \citep{takeushi2013parametric, sangnier,lee2010nested} is then a
+%relevant setting, enabling to take benefit from the interdependency of several
+%tasks. Typically, a {\it consistency property}, e.g. a solution of a
+%parameterized task behaves continuously over its hyperparameter, can be used
+%on each of the three examplified parameterized tasks.
+%\citet{takeushi2013parametric} and  \citet{sangnier} have proposed to exploit
+%this property in different ways.
+
+
+
+%\ac{PTL} introduced in \citep{takeuchi2013parametric} solves an approaching
+%problem by exploiting the piecewise linearity of the solution
+%with respect to the hyperparameter, at the expense of being limited to piecewise
+%linear loss functions. The difficulty of solving an infinite number of tasks
+%is here tackled by a modelization in a \ac{vv-RKHS} which allows us to rely
+%on more complex models, the shape of the function being controlled by the
+%choice of the output kernel $k_{\hyperparameterspace}$. \\
+%In their seminal work, \citet{takeushi2013parametric} consider an infinite number of parameterized tasks in a framework called {\it Parametric-Task Learning}, and under a linearity assumption of the model, the parameter vector of the linear model is learned as a continuous function of the task parameter.
+%
+In various cases including \ac{QR}, \ac{CSC} or \ac{DLSE}, one is interested in
+solving the parameterized task for several hyperparameter values. \acl{MTL}
+\citep{evgeniou2004regularized} provides a principled way of benefiting from
+the  relationship between similar tasks  while preserving local properties of
+the algorithms: $\nu$-property in \ac{DLSE} \citep{glazer2013q} or quantile
+property in \ac{QR} \citep{takeuchi2006nonparametric}. \par
+
+A natural extension from the traditional multi-task setting is to provide a
+prediction tool being able to  deal with \emph{any} value of the
+hyperparameter. In their seminal work, \citep{takeuchi2013parametric}
+extended multi-task learning by considering an infinite number of
+parametrized tasks in a framework called \acf{PTL}. Assuming that the loss
+is piecewise affine in the hyperparameter, the authors
+are able to get the whole solution path
+through parametric programming, relying on techniques developed
+by \citet{hastie2004entire}.\footnote{Alternative optimization techniques
+to deal with countable or continuous hyperparameter spaces could include
+semi-infinite \citep{stein2012solve} or bi-level programming \citep{wen1991linear}.}
+
+% Specifically, they  prove
+% that, when focusing on an affine model for each task, one recovers the
+% task-wise solution for the whole spectrum of hyperparameters, at the cost of
+% having a model piece-wise linear in the hyperparameter.
+%  \rb{In the present context
+% the training set is the same for each task; a task meaning here training for
+% a different hyperparamter value. This setting is sometimes refered to as multi-output learning
+% \citep{Alvarez2012}. The link between multi-ouput and multi-task on different training set is
+% detailed in \citep{maurer2016vector,ciliberto2017consistent}.}
+%
+%\rb{While not related to multitask learning, some alternative approches to
+% tackle problem with an infinite number of paramters include linear bi-level
+% programing \citep{wen1991linear}, semi-infinite programing
+% \citep{stein2012solve} and solution path algorithms \citep{hastie2004entire}}
+% \rb{While not related to multitask learning, some alternative approches to
+% tackle problem with an infinite number of paramters include linear bi-level
+% programing \citep{wen1991linear}, semi-infinite programing
+% \citep{stein2012solve} and solution path algorithms \citep{hastie2004entire}}
+% in the hyperparameter.
+%
+%
+% . The learnt model is then piecewise-linear
+% in the hyperparameter. \par
+%
+%While it is very interesting to get a task-wise solution, the estimator for
+%each task is obtained as a result of %parametric programming in the context of
+%the existence of an optimal solution path.
+% Yet, the approach relies on the restrictive assumption of piecewise linear loss
+% functions and affine models.
+%strong assumption on the loss function and the restriction to a
+%piecewise-linear model in the hyperparameter might be a hindrance.
+
+In this paper, we relax the affine model assumption on the tasks as well as
+the piecewise-linear assumption on the loss, and take a different angle. We
+propose \acf{ITL} within the framework of function-valued function learning to
+handle a continuum number of parameterized tasks. For that purpose we leverage
+tools from operator-valued kernels and the associated \acf{vv-RKHS}. The idea
+is that the output is a function on the hyperparameters ---modelled as
+scalar-valued \ac{RKHS}---, which provides an explicit control over the role of the
+hyperparameters, and also enables us to consider new type of constraints. In
+the studied framework each task is described by  a (scalar-valued) \ac{RKHS}
+over the input space which is capable of dealing with nonlinearities.
+%These
+%two modelling assumptions give rise to a \ac{vv-RKHS} defined by a
+%decomposable kernel.
+The resulting \acs{ITL} formulation relying on \ac{vv-RKHS} specifically encompasses
+existing multi-task approaches including joint quantile regression
+\citep{sangnier2016joint} or multi-task variants of density level set
+estimation \citep{glazer2013q} by encoding a continuum of tasks.
+
+% correspond to
+% a function-valued function in a \ac{vv-RKHS} defined by a decomposable kernel.
+% (Fl:NOT FINISHED) Working in \acp{RKHS}
+% allows for flexibility in terms of modeling, due to the kernels choice. The
+% scalar-valued kernel over the hyperparameter space defines how to measure
+% similarity between parametrized tasks, allowing for continuous functions over
+% the hyperparameter space.allowschoice of the (operator-valued) kernel over the
+% input space determines as usual the nature of regularization. \par
+%
+% In their work, one chooses
+% appropriately a matrix-valued kernel taking into account the distance between
+% hyperparameters to modelize the contiguity of two close
+% quantiles, which relates in \ac{ITL} to the choice of the \ac{vv-RKHS}. \par
+%The choice of a \ac{vv-RKHS} can be seen as a generalization of this
+%principle to a continuum of hyperparameter. \par
+%
+%
+% In this paper, we propose to generalize the framework of Parametric-Task
+%  Learning in order to learn a function with values in a Reproducing Kernel
+%  Hilbert Space $\mcH_K$.
+ %Typically, a consistency property, e.g. a solution of a parametrized
+ %task behaves continuously over its hyperparameter, can be used on each of the
+  %three examplified parametrized tasks.
+%
+%The consistency property is satisfied by construction byHowever this approach
+% requires to fix before training the values of the hyperparameter on which the
+% final user is interested on. This can be viewed as a limitation and a natural
+% extension is to consider  an infinite number of parametrized tasks. T
+%
+%
+ %In this paper, we are interested on addressing
+% \par
+% Construction of so-called solution paths, for a given input and as the
+% hyperparameters vary, sketched as
+% \begin{center}
+%     `hyperparameter $\mapsto$ output'\hspace{0.1cm} |\hspace{0.1cm} input,
+% \end{center}
+% is a central idea which enables one to study multiple/continuum alternatives
+% simultaneously. Probably the most well-known instantiation of this principle
+% is the piecewise-linear regularization path of LASSO, implemented by the LARS
+% algorithm \citep{efron04least}. Indeed, the Lasso task is
+% $\bm{\beta}_{\lambda}\defeq\argmin_{\bm{\beta}}\left\|\mathbf{z} -
+% \mathbf{D}\bm{\beta}\right\|_2^2 + \lambda \left\|\bm{\beta}\right\|_1$.  In
+% this case the $(\mathbf{z},\mathbf{D})$ pair plays the role of the input,
+% $\lambda$ is the hyperparameter, and the regularization path implemented by
+% LARS is
+% \begin{align*}
+%     \lambda \mapsto \bm{\beta}_{\lambda} \hspace{0.1cm} |\hspace{0.1cm}
+%     (\mathbf{z},\mathbf{D}).
+% \end{align*}
+%
+% Besides, there exist generalizations of piecewise-linear regularization paths
+% to other regularized empirical risks \citep{rosset07piecewise}, as well as many
+% other results concerning graphical LASSO \citep{friedman08sparse},
+% regularization path of \acp{SVM} \citep{hastie04entire} and its $\nu$-\acs{SVM}
+% variant \citep{gu12regularization,gu17robust}, as well as generalized linear
+% models \citep{friedman10regularization}. Unfortunately, the construction of
+% these algorithms is often task-specific, while automatically learning solution
+% paths and allowing the input to vary would be highly beneficial. \par
+% %
+% \citet{gu17solution} provide an elegant but partial answer to this question by
+% presenting the parametric quadratic programming framework: it covers a wide
+% family of existing objective functions, while still keeping the \emph{'input'
+% fixed}. A complementary fundamental  contribution is the parametric task
+% learning umbrella \citep{takeuchi2013parametric}, which allows one to consider
+% the learning of infinitely many tasks under a \emph{linear model} assumption.
+% Our focus lies at the intersection of these works: allowing the input to vary
+% while not restricting the model class to be linear in infinite-task learning.
+%
+% Another line of search, tackling solution paths in a more general context is
+% \emph{parametric task learning}, where infinitely many tasks (parametrized by
+% a single parameter and addressed by a linear model) are considered and
+% learned simultaneously \citep{takeuchi2013parametric}.  Examples of such
+% tasks are joint quantile regression, cost-sensitive classification and
+% learning under non-stationarity.  In practice, \emph{parametric task
+% learning} for linear models boils down to solving a parametric quadratic
+% program in order to obtain the (piece-wise) optimal solution path%
+% This has been generalized to many machine learning problems by \citet{gu17solution}.
+% % \citep{sangnier2016joint}
+% Unfortunately, the construction of these algorithms is often task-specific, while
+% automatically learning solution paths and allowing the input to vary would be
+% highly beneficial. This is the focus of our work.
+%
+% To our knowledge, there is at least two precedents in searching an optimal solution path for a large class of problems:
+%
+% \citet{gu17solution} introduces a general parametric quadratic programming
+% (PQP) framework  to solve generalized solution paths (GSP) in the context of
+% regularization in a large class of kernel methods such as SVM,
+% $\epsilon$-SVR, SVOR. The focus is put on the properties of the optimization
+% problem and a direct application of GSP is to compute the minimum CV error
+% based on the solution path.
+%
+% \citet{takeuchi2013parametric} developed solution paths with another motivation. They introduced the so-called \emph{parametric task learning}, an extension of multi-task learning to infinite-task learning that makes sense when a user wants to solve simultaneously many tasks parametrized by a continuous hyperparameter. Typically, joint quantile regression, cost-sensitive classification or learning under non-stationarity are their target tasks.
+% They addressed the problem using linear models and under some assumptions on the local loss function, the approach boils down into a parametric quadratic program to obtain the (piece-wise) optimal solution path.
+%
+% In this paper, we tackle the infinite-task learning problem within the
+% framework of function-valued function learning.  For that purpose, we leverage
+% tools from operator-valued kernels and the associated \ac{vv-RKHS}.
+% % NOTE (ROMAIN):
+% % DO note add this citation. acronym package will cite them automatically on
+% % the first occurance of \ac{vv-RKHS}.
+% %
+% % compile using scons --kind=draft to see it
+% %
+% % Adding the below references will just double them in the final paper.
+% %
+% % \citep{micchelli05learning,carmeli10vector,kadri16operator}.
+% While the classical framework of scalar-valued kernels
+% \citep{aronszajn50theory,berlinet04reproducing} can model real-valued
+% functions, their operator-valued kernel and \ac{vv-RKHS} counterpart provide a
+% mathematically sound way of encoding prior information about the relation of
+% the outputs, which can be themselves elements of a function (Hilbert) space.
+% This approach allows us to design algorithms to learn solution paths in the form:
+% \begin{align}
+%       \text{`input $\mapsto$ (hyperparameter $\mapsto$ output)'}.\label{eq:regpath-motiv}
+% \end{align}
+% \par
+% In order to informally explain the idea, let us consider an example (in
+% cost-sensitive classification with hyperparameter \hyperparameter) from the
+% imaginary life of a medical doctor during a flu epidemic.  Given the physical
+% conditions of a patient (input: \inputdata), it is the medical doctor's
+% responsibility to infer whether the subject is infected by flu (output:
+% \outputdata).  A false positive or false negative prediction might have
+% significantly different consequences/costs (the doctor's renom{\'e} could be
+% weakened or the patient might become a virus carrier). When pondering about the
+% consequences of his/her final diagnosis ($\hyperparameter \mapsto \outputdata$)
+% the medical doctor implicitly builds up an
+% \begin{align*}
+%     \text{`}\inputdata \mapsto (\hyperparameter \mapsto \outputdata)\text{'}
+% \end{align*}
+% mapping to take into account the patient's fitness characteristics ($x$). This
+% is intuitively the mapping we are aiming to model with \acp{vv-RKHS}.\par
+%
+% We would like to mention two further contributions, in the context of \ac{vv-RKHS}s.
+% \citet{kadri16operator} considered learning functions with values in $L^2(\mathcal{C})$, the  space  of  square-integrable  functions
+% on  a  compact  set $\mathcal{C}$. In contrast to our work, however, the output values of the training data in their setting consisted
+% of functions (for example whole finger trajectories). \citet{Brouard2016_jmlr} defined a class of methods called Input Output Kernel
+% Regression. While they applied kernel trick on both the input and output side, their objective functions and penalties are
+% significantly different from ours as they considered  Structured Output and Multi-Task Regression tasks.
+
+
+%
+% Similar requirement emerges in the context of Quantile Regression
+% \citep{yu2003quantile}~--\,routinely applied in medicine, climate science and
+% economics\,--~where one has to investigate simultaneously several values of
+% quantiles, in Novelty Detection \citep{Pimentel2014}, or more generally in
+% predictive modelling \citep{takeuchi2013parametric}.\par
+%
+Our \textbf{contributions} can be summarized as follows:
+\begin{itemize}[labelindent=0cm, leftmargin=*,
+                topsep=0cm, partopsep=0cm, parsep=0cm, itemsep=0cm]
+    \item We propose ITL, a novel \ac{vv-RKHS}-based scheme to learn a
+    continuum of tasks parametrized by a hyperparameter and design new
+    regularizers.
+    %, establish representer theorems to learn function-valued functions and
+    %for new kind of regularizers, \item show that \acs{ITL} encompasses
+    %existing methods such as \citet{glazer2013q, sangnier2016joint}, bringing
+    %new light on them and allowing us to design new kind of penalties.  for
+    %supervised learning tasks as well as an example of unsupervised task
+    \item We prove excess risk bounds on  ITL and illustrate its efficiency in
+    quantile regression, cost-sensitive classification, and density level set
+    estimation.
+\end{itemize}
+The paper is structured as follows. The ITL problem is defined in
+\cref{section:infinite_tasks}. In \cref{section:results} we detail how the
+resulting learning problem can be tackled in \acp{vv-RKHS}. Excess risk
+bounds is the focus of \cref{sec:excess-risk}. Numerical results are presented
+in \cref{section:numerical_experiments}.
+Conclusions are drawn in
+\cref{section:conclusion}.
+Details of proofs  are given in the supplement.

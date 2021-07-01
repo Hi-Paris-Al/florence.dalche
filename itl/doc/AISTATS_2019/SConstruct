@@ -1,0 +1,5 @@
+# -*- mode: python -*-
+# SCons build file
+
+VariantDir('build/', 'src', duplicate=0)
+SConscript('build/SConstruct')

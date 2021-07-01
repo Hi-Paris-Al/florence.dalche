@@ -1,0 +1,50 @@
+\onecolumn
+\part*{SUPPLEMENTARY MATERIAL}
+\renewcommand{\thesection}{S.\arabic{section}}
+\renewcommand{\thesubsection}{S.\arabic{section}.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{S.\arabic{section}.\arabic{subsection}%
+    .\arabic{subsubsection}}
+\renewcommand{\thetable}{S.\arabic{table}}
+\renewcommand{\thefigure}{S.\arabic{figure}}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%<<<<<<< HEAD
+%%
+%\ifthenelse{\NOT\isundefined{\draft}\OR\NOT\isundefined{\final}}{
+{\centering
+\subsubsection*{Acronyms}
+\printacronyms[heading=none]\par}
+%}{}
+%%
+%\\
+%Below we provide the proofs of our results stated in the main part of the paper.
+%=======
+Below we provide the proofs of the results stated in the main part of the
+paper.
+%>>>>>>> 1a53644efbc9773324384e46e5d2a47af752482e
+\begin{refsection}
+\section{Quantile Regression}
+\label{appendix:qr}
+\input{appendix/qr.tex}
+
+\section{Representer Propositions}
+\label{appendix:representer}
+\input{appendix/representer.tex}
+
+\section{Generalization error in the context of stability}
+\label{appendix:stability}
+\input{appendix/generalization.tex}
+
+\section{Experimental remarks}
+\label{appendix:experiments}
+\input{appendix/experiments.tex}
+\printbibliography[heading=subbibliography]
+\end{refsection}
+%\ifthenelse{\NOT\isundefined{\draft}\OR\NOT\isundefined{\final}}{
+    %\subsubsection*{Acronyms}
+    %\printacronyms[heading=none]
+%}{}
+%
+
+%\section{Additional Experiments}
+%\input{appendix/experiments.tex}

@@ -1,0 +1,579 @@
+\begin{itemizThis section is dedicated to solving the ITL problem  defined in
+\cref{equation:h-objective-empir}. In \cref{sec:V} we focus on the objective
+$(\sampledcost)$. The applied vv-RKHS model family is detailed in \cref{sec:H}
+with various penalty examples followed by the representer theorem which gives
+rise to computational tractability. 
+
+\subsection{Sampled Empirical Risk} \label{sec:V}
+In practice solving \cref{equation:h-objective-empir} can be rather challenging
+due to the additional integral over $\hyperparameter$.  One might consider
+different numerical integration techniques to handle this issue; below we show
+that quadrature rules, \ac{MC} and \ac{QMC} methods\footnote{When
+$\hyperparameterspace$ is high dimensional, \ac{MC} is typically preferred over
+\ac{QMC}, and vice versa.} are especially well suited for our purpose as they
+allow
+\begin{inparaenum}[(i)]
+    \item efficient optimization over \acp{vv-RKHS} which we will use for
+    modelling $\hypothesisspace$ (\cref{theorem:representer_supervised}), and
+    \item enable us to derive generalization guarantees
+    (\cref{proposition:generalization_supervised}).
+\end{inparaenum}
+Indeed, let
+\begin{align}\label{equation:integrated_cost}
+   \sampledcost(y, h(x)) \defeq \sum_{j=1}^m w_j
+   \hcost(\hyperparameter_j,y, h(x)(\hyperparameter_j))
+\end{align}
+be the approximation of \cref{equation:integrated_cost0} where in case of
+\begin{inparaenum}[(i)]
+    \item \ac{MC}: $w_j = \frac{1}{m}$ and $(\theta_j)_{j=1}^m
+    \sim \mu^{\otimes m}$.
+    %Note that if $\mu=\delta_{\theta_j'}$ is a dirac measure  centered at
+    %$\theta_{j'}$ then $\theta_j=\theta_j'$.
+    \item \ac{QMC}: $w_j = m^{-1}F^{-1}(\theta_j)$ and $(\theta_j)_{j=1}^m$
+    is a sequence with values in $[0, 1]^d$ such as the % uniform properties
+    Sobol or Halton sequence, $\mu$ is assumed to be absolutely continuous
+    \acs{wrt} the Lebesgue measure, $F$ is the associated cdf.
+    \item Quadrature rules: $((\theta_j, w'_j))_{j=1}^m$ is the indexed set of
+    locations and weights produced by the quadrature rule, $w_j
+    = w'_j f_{\mu}(\theta_j)$, $\mu$ is assumed to be absolutely continuous
+    \acs{wrt} the Lebesgue measure, and $f_\mu$ denotes its corresponding
+    probability density function.
+\end{inparaenum}
+Using this notation and the training samples
+$\trainingset=((x_i,y_i))_{i=1}^n$, the empirical risk takes the form
+\begin{align}
+    \sampledempiricalrisk(h) \defeq \frac{1}{n} \sum_{i=1}^n
+    \widetilde{\cost}(y_i, h(x_i))
+\end{align}
+and the problem to solve is
+\begin{align}\label{equation:h-objective-empir2}
+    \min_{h\in \hypothesisspace} \sampledempiricalrisk(h) + \Omega(h).
+\end{align}
+%
+\subsection{Hypothesis class ($\hypothesisspace$)} \label{sec:H}
+Recall that $\hypothesisspace \subseteq
+\functionspace{\inputspace}{\functionspace{
+\hyperparameterspace}{\outputspace}}$, in other words $h(x)$ is a
+$\hyperparameterspace \mapsto \outputspace$ function for all $x \in
+\inputspace$.  In this work we assume that $\outputspace \subseteq \reals$ and
+the $\hyperparameterspace \mapsto \outputspace$ mapping can be described by an
+\acs{RKHS} $\mcH_{k_{\hyperparameterspace}}$ associated to a
+$k_{\hyperparameterspace} \colon \hyperparameterspace \times
+\hyperparameterspace \to \reals$ scalar-valued kernel defined on the
+hyperparameters.  Let $k_{\mcX} \colon \mcX \times \mcX \to \mathbb{R}$ be a
+scalar-valued kernel on the input space. The  $x \input \mapsto
+(\text{hyperparameter} \mapsto \text{output})$ relation, \acs{ie} $h\colon
+\inputspace \to \mcH_{k_{\hyperparameterspace}}$ is then modelled by the
+\acl{vv-RKHS} $\hypothesisspace_K = \lspan \Set{K(\cdot,x)f |\enskip x \in
+\mcX,\enskip f \in \hypothesisspace_{k_{\hyperparameterspace}}}$, where the
+operator-valued kernel $K$ is defined as $K(x,z)= k_{\mcX}(x,z) I$, and
+$I=I_{\mcH_{k_{\hyperparameterspace}}}$ is the identity operator on
+$\mcH_{k_{\hyperparameterspace}}$. \par
+%
+This so-called decomposable \acl{OVK} has several benefits and gives rise to a
+function space with a very peculiar structure. One can consider elements $h \in
+\mcH_K$ as having input space $\mcX$ and output space $\mcH_{k_{\Theta}}$, but
+also as functions from $(\mcX \times \Theta)$ to $\reals$. It is indeed known
+that there is an isometry between $\mcH_K$, $\mcH_{k_{\mcX}} \otimes
+\mcH_{k_{\Theta}}$, and the \ac{RKHS} associated to
+% <<<<<<< HEAD
+% the product kernel $k_{\mcX} \cdot k_{\Theta}$. The equivalence between these
+% views allows for a great flexibility whether one is interested in statistical
+% aspects (functional view), in designing new kind of penalization schemes
+% (tensor product view), or rather in deriving practical optimization methods
+% (joint input space view). \par As a consequence, depending on the task, one can
+% choose the most suitable regularization term to add to the sampled empirical
+% risk. For \ac{QR} and \ac{CSC}, a regularization in \ac{vv-RKHS} norm may be
+% chosen as to ease the analysis of the excess risk
+% \seep{proposition:generalization_supervised}:
+% \begin{align}
+%   \Omega(h)= \frac{1}{2}\norm{h}_{\mcH_K}^2
+% \end{align}
+% It is the counterpart of the classical multi-task regularization term
+% introduced in \citep{sangnier2016joint}, compatible with an infinite number of
+% tasks. The kernel acts as a natural regularizer by constraining the solution to
+% be taken in a ball of a finite radius within the \ac{vv-RKHS}, whose shape is
+% controlled by both $k_{\mcX}$ and $k_{\Theta}$.\par For \ac{DLSE}, such a
+% regularization would break the asymptotic property of estimating the density
+% level sets, and a natural $L^1$-\ac{RKHS} mixed regularization term appears
+% when integrating the loss function with respect to $\theta$, that is
+% \begin{align}
+%     \Omega(h)= \frac{1}{2} \int_{\hyperparameterspace} \norm{h(\cdot)(\theta)}_{\mcH_{k_{\mcX}}}^2 \mathrm{d}\mu(\theta)
+% \end{align}
+% This term allows for an empirical conservation of the so-called $\theta$-property as emphasized
+% in \cref{fig:iocsvm_nu_novelty}.
+% \par
+% Note that \acl{OVK}s for functional outputs have also been used in
+% \citep{kadri16operator}, under the form of integral operators acting on
+% $L^2$ spaces. Both kernels give rise to the same space of functions,
+% the benefit of our approach being to provide an \emph{exact} finite representation
+% of the solution \seep{theorem:representer_supervised}.\par
+the product kernel $k_{\mcX} \otimes k_{\Theta}$. The equivalence between these
+views allows a great flexibility and enables one to follow a functional view
+(to analyse statistical aspects), to use the tensor product view (to design new
+kind of penalization schemes) or leverage the joint input space view (to derive
+efficient optimization schemes). \par Below we detail various regularizers and
+the representer theorem.
+%
+\textbf{Regularizers ($\Omega$):}
+\begin{itemize}[labelindent=0em,leftmargin=*,topsep=0cm,partopsep=0cm,parsep=0cm,itemsep=0cm]
+ \item \textbf{Ridge penalty}: For \ac{QR} and \ac{CSC}, a natural regularization is the squared norm \ac{vv-RKHS}
+    \begin{align}
+        \Omega^{\text{RIDGE}}(h) &= \frac{1}{2}\norm{h}_{\mcH_K}^2.
+    \end{align}
+    This choice is amenable to excess risk analysis
+    \seep{proposition:generalization_supervised}.  It can be also seen as the
+    counterpart of the classical (multi-task regularization term introduced in
+    \citep{sangnier2016joint}, compatible with an infinite number of tasks.
+    $\norm{\cdot}_{\mcH_K}^2$ acts by constraining the solution to a ball of a
+    finite radius within the \ac{vv-RKHS}, whose shape is controlled by both
+    $k_{\mcX}$ and $k_{\Theta}$.  \item \textbf{$L^{2,1}$-penalty}: For
+    \ac{DLSE}, the ridge penalty would break the asymptotic property of
+    estimating the density level sets.  In this case, the natural choice is an
+    $L^{2,1}$-\ac{RKHS} mixed regularizer
+    \begin{align}
+        \Omega(h)= \frac{1}{2} \int_{\hyperparameterspace} \norm{x \mapsto
+        h(x)(\theta)}_{\mcH_{k_{\mcX}}}^2 \mathrm{d}\mu(\theta)
+    \end{align}
+    which is an example of a $\hyperparameterspace$-integrated penalty. This
+    $\Omega$ choice allows the preservation of the $\theta$-property (see
+    \cref{fig:iocsvm_nu_novelty}), in other words that the proportion of the
+    outliers is $\theta$. \vspace{2mm} \item \textbf{Shape constraints}: Taking
+    the example of \ac{QR} it is advantageous to ensure the monotonicity of the
+    estimated quantile function (beside $\Omega^{\text{RIDGE}}$ as is used in
+    \ac{CSC}); hence one should solve
+    \begin{align*}
+        &\argmin_{h \in \mcH_K} \sampledempiricalrisk(h) +
+        \frac{\lambda}{2}\norm{h}_{\mcH_K}^2 \condition{$\lambda>0$} \\
+        & \text{s.t.} \quad \forall (x,\theta) \in \mcX \times \Theta,
+        ((\partial h(x))(\theta) \geq 0.
+    \end{align*}
+    However, the functional constraint in the primal leads to certain
+    functional constraint in the dual and as such deriving an efficient
+    optimization algorithm can  be hard.  To mitigate this bottleneck, we
+    penalize if the derivative of $h$ \acs{wrt} $\hyperparameter$ is negative:
+    \begin{align}\label{equation:non_crossing}
+        \Omega_{\text{nc}}(h) \defeq \frac{\lambda_{\text{nc}}}{n}
+        \int_{\inputspace}\int_{\hyperparameterspace}\abs{ -\frac{\partial
+        h}{\partial \hyperparameter}
+        (x)(\theta)}_+d\mu(\hyperparameter)d\probability(x)
+    \end{align}
+    When $\probability\defeq\probability_{X}$ \cref{equation:non_crossing} is
+    approximated using the same anchors and weights than the one obtained to
+    integrate the loss function
+    %\begin{align}\label{equation:non_crossing_sampled}
+    \begin{align}
+        \widetilde{\Omega}_{\text{nc}}(h) =
+        \frac{\lambda_{\text{nc}}}{n}\sum_{i=1}^n\sum_{j=1}^mw_j\abs{
+        -\frac{\partial h}{\partial \hyperparameter} (x_i)(\theta_j)}_+.
+    \end{align}
+    Thus, one can modify the overall regularizer in \ac{QR} to be
+    \begin{align}\label{eq:whole_reg}
+        \Omega (h) &\defeq \lambda \Omega^{\text{RIDGE}}(h) +
+        \lambda_{\text{nc}}\widetilde{\Omega}_{\text{nc}}(h).
+    \end{align}
+\end{itemize}
+% \begin{align}\label{equation:non_crossing}
+%     \Omega_{\text{nc}}(h) \defeq
+%     \lambda_{nc}\int_{\inputspace}\int_{\hyperparameterspace}\abs{
+%     -\frac{\partial h}{\partial \hyperparameter}
+%     (x)(\theta)}_+d\mu(\hyperparameter)d\probability(x)
+% \end{align}
+% Indeed, the target functions may share some kind of monotonicity property:
+% a quantile function is by definition monotonically increasing in $\theta$, and
+% minimum mass volume sets sould be \emph{nested}, yet estimates based
+% on finite samples
+% might violate these properties as it was observed
+% \citep{takeuchi2006nonparametric}. Having access to a functional
+% model allows to create penalities depending on the derivative of the model,
+% which is especially suitable in our case.
+% \paragraph{\ac{QR}:}
+% While a quantile function by
+% definition is monotonically increasing, the estimate based on finite samples
+% might violate this property as it was observed
+% \citep{takeuchi2006nonparametric}. Existing solutions mitigating this
+% bottleneck include the application of non-crossing inducing constraints, as
+% expressed for example by the
+% crossing loss
+% \begin{align*}
+%   \hcost_{\text{nc}}(h, (\hyperparameter_j)_{j=1}^m) \defeq
+%   \sum_{j=1}^{m-1}\frac{1}{n}\sum_{i=1}^n \abs{h(x_i)(\theta_{j + 1}) -
+%   h(x_i)(\theta_{j})}_+
+% \end{align*}
+% where $\hyperparameter_1 < \ldots < \hyperparameter_m$.
+% Intuitively, non-crossing  is enforced by
+% constraining the quantile level $h(x_i)(\hyperparameter_{j+1})$ to be smaller
+% than the quantile level $h(x_i)(\theta_j)$ for $\hyperparameter_{j+1} >
+% \hyperparameter_j$ and for all $x_i$ in the training set. In our case, when a
+% continuum of quantiles are being learned, we propose to penalize the risk when
+% the derivative of $h$ \acs{wrt} $\hyperparameter$ is negative, as encoded by
+% the
+% \begin{align}\label{equation:non_crossing}
+%     \Omega_{\text{nc}}(h) \defeq
+%     \lambda_{nc}\int_{\inputspace}\int_{\hyperparameterspace}\abs{
+%     -\frac{\partial h}{\partial \hyperparameter}
+%     (x)(\theta)}_+d\mu(\hyperparameter)d\probability(x)
+% \end{align}
+% penalty. When $\probability\defeq\probability_{X}$~; \cref{equation:non_crossing}
+% can be approximated using the same anchors and weights than the one obtained to
+% integrate the loss function
+% %\begin{align}\label{equation:non_crossing_sampled}
+% $\widetilde{\Omega}_{\text{nc}}(h) =
+% \frac{\lambda_{nc}}{n}\sum_{i=1}^n\sum_{j=1}^mw_j\abs{ -\frac{\partial
+% h}{\partial \hyperparameter} (x_i)(\theta_j)}_+$.\par
+% %
+% \paragraph{\ac{CSC}:}
+% One expects that for each $x\in \mcX$, the function $h(x)$ changes its sign
+% only one time.
+% \par
+% \paragraph{\ac{DLSE}:}
+% The level sets obtained should be \emph{nested}, that is
+% \par
+%
+% \paragraph{A representer proposition:} \cref{problem:ermsupervised} is amenable
+% to optimization thanks to the representer lemma formulated below in the special
+% case when $\Omega_{\lambda}(h) = \frac{\lambda}{2}\norm{h}_{\mcH_K}^2$.
+\textbf{Representer theorems:}
+Apart from the flexibility of regularizer design, the other advantage of
+applying vv-RKHS as hypothesis class is that it gives rise to
+finite-dimensional representation of the ITL solution under mild conditions. 
+The representer theorem  \cref{theorem:representer_supervised} applies to \ac{CSC} when $\lambda_{nc}=0$ and to \ac{QR} when $\lambda_{nc} > 0$.
+% (Zoltan: I guess this is not about \cref{problem:ermsupervised}, as it
+% contains kernel derivatives...) %\cref{equation:h-objective-empir2}
+\begin{proposition}[Representer] \label{theorem:representer_supervised}
+    Assume that for $\forall \hyperparameter \in \hyperparameterspace,
+    \parametrizedcost{\hyperparameter}$ is a proper lower semicontinuous convex
+    function with respect to its second argument. Then
+    \begin{align*}
+        \argmin_{h \in \mcH_{K}} \sampledempiricalrisk(h) + \Omega (h)
+        \condition{$\lambda >0$}
+    \end{align*}
+    with $\Omega(h)$ defined as in \cref{eq:whole_reg}, has a unique solution
+    $h^*$, and $\exists$ $\left(\alpha_{ij}\right)_{i,j = 1}^{n,m},
+    \left(\beta_{ij}\right)_{i,j = 1}^{n,m} \in \mathbb{R}^{2nm}$ such that
+    $\forall x \in \inputspace$
+    {\small\begin{dmath*}
+        %h^*(x)(\hyperparameter) = \sum_{i=1}^{n} \sum_{j=1}^m \alpha_{ij}
+        %k_{\mcX}(x,x_i)
+        %k_{\hyperparameterspace}(\hyperparameter,\hyperparameter_j) +
+        %\sum_{i=1}^{n} \sum_{j=1}^m \beta_{ij} k_{\mcX}(x,x_i) \partial_2
+        %k_{\hyperparameterspace}(\hyperparameter,\hyperparameter_j)
+        h^*(x) = \sum_{i=1}^{n} k_{\inputspace}(x, x_i)\left(\sum_{j=1}^m
+        \alpha_{ij} k_{\hyperparameterspace}(\cdot,\hyperparameter_j) +
+        \beta_{ij}(\partial_2
+        k_{\hyperparameterspace})(\cdot,\hyperparameter_j)\right).
+    \end{dmath*}}
+\end{proposition}
+\begin{sproof}
+    First, we prove that the function to minimize is coercive, convex, lower
+    semicontinuous, hence it has a unique minimum. Then $\mcH_K$ is decomposed
+    into two orthogonal subspaces and we use the reproducing property to get
+    the finite representation.% (see \cref{theorem:representer_ocsvm} of the appendix).
+\end{sproof}
+For \ac{DLSE}, we similarly get a representer theorem with the following moldeing choice.
+The hypothesis space for $h$ is still $\mcH_K$ but parameter $t$ now becomes a function over
+the hyperparameter space, belonging to $\mcH_{k_{b}}$, the \ac{RKHS} associated
+with the scalar kernel $k_{b}:\hyperparameterspace \times \hyperparameterspace
+\rightarrow \reals$ that might be different from $k_{\hyperparameterspace}$.
+Assume also that $\hyperparameterspace \subseteq \closedinterval{\epsilon}{1}$
+where $\epsilon > 0$\footnote{We choose $\hyperparameterspace \subseteq
+\closedinterval{\epsilon}{1}$, $\epsilon > 0$ rather than
+$\hyperparameterspace\subseteq\closedinterval{0}{1}$ because the loss might not
+be integrable on $\closedinterval{0}{1}$.}. Then, learning a
+continuum of level sets boils down to the minimization problem
+\begin{align}\label{problem:ocsvm}
+    &\argmin_{h \in \mcH_K, t \in \mcH_{k_{b}}} \sampledempiricalrisk(h,t) +
+    \widetilde{\Omega}_{\lambda}(h,t) \condition{$\lambda >0$},\\
+\text{with} \quad &
+\begin{cases} \nonumber
+  \sampledempiricalrisk(h,t) &= \frac{1}{n}
+  \sum_{i, j=1}^{n, m} \frac{w_j}{\hyperparameter_j} \left(
+  \abs{t(\hyperparameter_j) - h(x_i)(\hyperparameter_j)}_+ -
+  t(\hyperparameter_j)\right),  \\
+  \widetilde{\Omega}_{\lambda}(h,t)
+  &=  \sum_{j=1}^m w_j
+  \norm{h(\cdot)(\hyperparameter_j)}_{\mcH_{k_{\mcX}}}^2  + \frac{\lambda}{2}
+  \norm{t}_{\mcH_{k_{b}}}^2.
+\end{cases}
+\end{align}
+%The decision function to check whether
+%a point $x$ is inside the level-set $\hyperparameter$ is then
+%\begin{align*}
+%$d(x)(\hyperparameter) \defeq \indicator{\reals_{+}}(h(x)(\hyperparameter) -
+%t(\hyperparameter))$.
+%\end{align*}
+%Note that contrary to the supervised case, one directly integrates the empirical
+%problem in the hyperparameterspace, leading to a specific form for the
+%regularization term on $h$, namely $ \sum_{j=1}^m w_j h(\cdot)(\hyperparameter_j)$.
+%It corresponds to a $\theta$-pointwise regularization in the
+%\ac{RKHS} $\mcH_{k_{\mcX}}$, and while this regularization term is weaker than the
+%\ac{vv-RKHS} norm used in supervised learning (in the sense that it can be nullified
+%while the vector-valued function $h$ is not $0$), it suffices to establish a representer
+%theorem.
+%
+% The decision function to check whether
+% a point $x$ is inside the level-set $\hyperparameter$ is then
+% %\begin{align*}
+% $d(x)(\hyperparameter) \defeq \indicator{\reals_{+}}(h(x)(\hyperparameter) -
+% t(\hyperparameter))$.
+% %\end{align*}
+% %
+% Eventually, we can obtain the following representer statement, which can be
+% viewed as the unsupervised analogy of
+%\cref{theorem:representer_supervised}.
+%
+\begin{proposition}[Representer] \label{theorem:representer_ocsvm}
+    %Let $h^*,t^* \in \mcH_K \times \mcH_{k_{}}$ be the solution of the
+    %minimization problem
+    Assume that $k_{\hyperparameterspace}$ is bounded: $\sup_{\hyperparameter
+    \in \Theta} k_{\hyperparameterspace}(\hyperparameter,\theta) < +\infty$.
+    Then the  minimization problem described in \cref{problem:ocsvm} has a
+    unique solution $(\minimizer{h}, \minimizer{t})$ and  there exist
+    $\left(\alpha_{ij}\right)_{i,j = 1}^{n,m}\in \reals^{n\times m}$ and $\left
+    ( \beta_{j} \right)_{j=1}^m \in \reals^m$ such that for $\forall
+    (x,\hyperparameter) \in \inputspace \times \openinterval{0}{1}$,
+     \begin{align*}
+            \minimizer{h}(x)(\hyperparameter) &=
+            \displaystyle\sum_{i=1}^{n}\displaystyle\sum_{j=1}^m \alpha_{ij}
+            k_{\mcX}(x,x_i)
+            k_{\hyperparameterspace}(\hyperparameter,\hyperparameter_j),&
+            t^*(\hyperparameter) &= \sum_{j=1}^{m} \beta_{j}
+            k_{b}(\hyperparameter,\hyperparameter_j).
+     \end{align*}
+\end{proposition}
+\begin{sproof}
+    First we show that the infimum exists, and that it must be attained in some
+    subspace of $\mcH_K \times \mcH_{k_b}$ over which the objective function is
+    coercive. By the reproducing property, we get the claimed finite decomposition.
+\end{sproof}
+
+
+\textbf{Remarks:}
+\begin{itemize}[labelindent=0em,leftmargin=*,topsep=0cm,partopsep=0cm,
+                parsep=2mm,itemsep=0cm]
+    \item Models with bias term: Occasionally it can be advantageous to add a
+    bias to the model, which is function of the hyperparameter
+    $\hyperparameter$: $\label{equation:biased_models} h(x)(\hyperparameter) =
+    f(x)(\hyperparameter) + b(\hyperparameter)$, $f\in\mathcal{H}_K$,
+    $b\in\mathcal{H}_{k_b}$, where $k_b:\hyperparameterspace  \times
+    \hyperparameterspace \rightarrow \reals$ is a scalar-valued kernel.  This
+    can be the case  for example if the kernel on the hyperparameters is the
+    constant kernel, \acs{ie} $k_{\hyperparameterspace}(\hyperparameter,
+    \hyperparameter')=1$ ($\forall \hyperparameter, \hyperparameter'\in
+    \hyperparameterspace$), hence the model $f(x)(\hyperparameter)$ would not
+    depend on $\hyperparameter$. Notice that an analogous statement to
+    % the representer statement
+    \cref{theorem:representer_supervised} still holds for the biased model if
+    one adds a regularization $\lambda_b\norm{b}_{\mcH_{k_b}}^2$, $\lambda_b>0$
+    to the risk.
+%
+    \item Relation to \ac{JQR}: In \ac{IQR}, by choosing
+    $k_{\hyperparameterspace}$ to be the Gaussian kernel, $k_b(x, z) =
+    \indicator{\Set{x}}(z)$, $\mu = \frac{1}{m}\sum_{j=1}^m \delta_{\theta_j}$,
+    where $\delta_{\theta}$ is the Dirac measure concentrated on $\theta$, one
+    gets back \citet{sangnier2016joint}'s Joint Quantile Regression (\ac{JQR})
+    framework as a special case of our approach. In contrast to the \ac{JQR},
+    however, in \ac{IQR} one can predict the quantile value at any
+    $\hyperparameter \in (0,1)$, even outside the $(\theta_j)_{j=1}^m$ used for
+    learning.
+%
+    \item Relation to q-\acs{OCSVM}: In \ac{DLSE},
+    % The task of finding a finite family of nested level sets of a density has been
+    % tackled in \citep{lee2010nested}. They use the knowledge of the whole solution
+    % path as well as an additional constraint to ensure the nested property, but
+    % lose the $\nu$-property due to that constraint. This problem is circumvented
+    % by q-\acs{OCSVM} introduced in \citep{glazer2013q}.
+    by choosing $k_{\hyperparameterspace}(\hyperparameter, \hyperparameter')=1$
+    (for all $\hyperparameter\,, \hyperparameter'\in \hyperparameterspace$) to
+    be the constant kernel, $k_b(\theta, \theta') =
+    \indicator{\Set{\theta}}(\theta')$, $\mu=\frac{1}{m}\sum_{j=1}^m
+    \delta_{\theta_j}$, our approach specializes to q-\acs{OCSVM}
+    \citep{glazer2013q}.
+%
+    \item Relation to \citet{kadri16operator}: Note that \acl{OVK}s for
+    functional outputs have also been used in \citep{kadri16operator}, under
+    the form of integral operators acting on $\mathcal{L}^2$ spaces. Both
+    kernels give rise to the same space of functions, the benefit of our
+    approach being to provide an \emph{exact} finite representation of the
+    solution \seep{theorem:representer_supervised}.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Excess Risk Bounds}\label{sec:excess-risk}
+\begin{table*}[!tp]
+    \caption{Quantile Regression on 20 \acs{UCI} datasets. Reported: $100
+    \times$value of the pinball loss, $100 \times $crossing loss (smaller is
+    better). \acs{pval}: outcome of the Mann-Whitney-Wilcoxon test of \ac{JQR}
+    \acs{vs} $\infty$-{QR} and Independent \acs{vs} $\infty$-\ac{QR}. Boldface:
+    significant values.  \label{table:quantile_results}}
+    %\begin{adjustwidth}{-3cm}{-3cm}
+    \addtolength{\tabcolsep}{-3pt}
+    \renewcommand{\arraystretch}{0.8}% Tighter
+    \begin{center}
+        \begin{tiny}
+            \begin{sc}
+                \resizebox{\textwidth}{!}{%
+                \begin{tabular}{ccccccccccc}
+                    \toprule
+                    \multirow{2}{*}{dataset}& \multicolumn{4}{c}{\acs{JQR}} &
+                    \multicolumn{4}{c}{IND} &
+                    \multicolumn{2}{c}{$\infty$-\ac{QR}} \\
+                    \cmidrule(lr){2-5}
+                    \cmidrule(lr){6-9}
+                    \cmidrule(lr){10-11}
+                    & (pinball & \acs{pval}) & (cross & \acs{pval}) & (pinball
+                    & \acs{pval}) & (cross & \acs{pval}) & pinball & cross \\
+                    \midrule
+                    CobarOre & $159 \pm 24$ & $9 \cdot 10^{-01}$ & $0.1 \pm
+                    0.4$ & $6 \cdot 10^{-01}$ & $150 \pm 21$ & $2 \cdot
+                    10^{-01}$ & $0.3 \pm 0.8$ & $7 \cdot 10^{-01}$ & $165 \pm
+                    36$ & $2.0 \pm 6.0$ \\
+                    engel & $175 \pm 555$ & $6 \cdot 10^{-01}$ & $0.0 \pm 0.2$
+                    & $1 \cdot 10^{+00}$ & $63 \pm 53$ & $8 \cdot 10^{-01}$ &
+                    $4.0 \pm 12.8$ & $8 \cdot 10^{-01}$ & $47 \pm 6$ & $0.0 \pm
+                    0.1$ \\
+                    BostonHousing & $49 \pm 4$ & $8 \cdot 10^{-01}$ & $0.7 \pm
+                    0.7$ & $2 \cdot 10^{-01}$ & $49 \pm 4$ & $8 \cdot 10^{-01}$
+                    & $\mathbf{1.3 \pm 1.2}$ & $1 \cdot 10^{-05}$ & $49 \pm 4$
+                    & $0.3 \pm 0.5$ \\
+                    caution & $88 \pm 17$ & $6 \cdot 10^{-01}$ & $0.1 \pm 0.2$
+                    & $6 \cdot 10^{-01}$ & $89 \pm 19$ & $4 \cdot 10^{-01}$ &
+                    $\mathbf{0.3 \pm 0.4}$ & $2 \cdot 10^{-04}$ & $85 \pm 16$ &
+                    $0.0 \pm 0.1$ \\
+                    ftcollinssnow & $154 \pm 16$ & $8 \cdot 10^{-01}$ & $0.0
+                    \pm 0.0$ & $6 \cdot 10^{-01}$ & $155 \pm 13$ & $9 \cdot
+                    10^{-01}$ & $0.2 \pm 0.9$ & $8 \cdot 10^{-01}$ & $156 \pm
+                    17$ & $0.1 \pm 0.6$ \\
+                    highway & $103 \pm 19$ & $4 \cdot 10^{-01}$ & $0.8 \pm 1.4$
+                    & $2 \cdot 10^{-02}$ & $99 \pm 20$ & $9 \cdot 10^{-01}$ &
+                    $\mathbf{6.2 \pm 4.1}$ & $1 \cdot 10^{-07}$ & $105 \pm 36$
+                    & $0.1 \pm 0.4$ \\
+                    heights & $127 \pm 3$ & $1 \cdot 10^{+00}$ & $0.0 \pm 0.0$
+                    & $1 \cdot 10^{+00}$ & $127 \pm 3$ & $9 \cdot 10^{-01}$ &
+                    $0.0 \pm 0.0$ & $1 \cdot 10^{+00}$ & $127 \pm 3$ & $0.0 \pm
+                    0.0$ \\
+                    sniffer & $43 \pm 6$ & $8 \cdot 10^{-01}$ & $0.1 \pm 0.3$ &
+                    $2 \cdot 10^{-01}$ & $44 \pm 5$ & $7 \cdot 10^{-01}$ &
+                    $\mathbf{1.4 \pm 1.2}$ & $6 \cdot 10^{-07}$ & $44 \pm 7$ &
+                    $0.1 \pm 0.1$ \\
+                    snowgeese & $55 \pm 20$ & $7 \cdot 10^{-01}$ & $0.3 \pm
+                    0.8$ & $3 \cdot 10^{-01}$ & $53 \pm 18$ & $6 \cdot
+                    10^{-01}$ & $0.4 \pm 1.0$ & $5 \cdot 10^{-02}$ & $57 \pm
+                    20$ & $0.2 \pm 0.6$ \\
+                    ufc & $81 \pm 5$ & $6 \cdot 10^{-01}$ & $\mathbf{0.0 \pm
+                    0.0}$ & $4 \cdot 10^{-04}$ & $82 \pm 5$ & $7 \cdot
+                    10^{-01}$ & $\mathbf{1.0 \pm 1.4}$ & $2 \cdot 10^{-04}$ &
+                    $82 \pm 4$ & $0.1 \pm 0.3$ \\
+                    BigMac2003 & $80 \pm 21$ & $7 \cdot 10^{-01}$ &
+                    $\mathbf{1.4 \pm 2.1}$ & $4 \cdot 10^{-04}$ & $74 \pm 24$ &
+                    $9 \cdot 10^{-02}$ & $\mathbf{0.9 \pm 1.1}$ & $7 \cdot
+                    10^{-05}$ & $84 \pm 24$ & $0.2 \pm 0.4$ \\
+                    UN3 & $98 \pm 9$ & $8 \cdot 10^{-01}$ & $0.0 \pm 0.0$ & $1
+                    \cdot 10^{-01}$ & $99 \pm 9$ & $1 \cdot 10^{+00}$ &
+                    $\mathbf{1.2 \pm 1.0}$ & $1 \cdot 10^{-05}$ & $99 \pm 10$ &
+                    $0.1 \pm 0.4$ \\
+                    birthwt & $141 \pm 13$ & $1 \cdot 10^{+00}$ & $0.0 \pm 0.0$
+                    & $6 \cdot 10^{-01}$ & $140 \pm 12$ & $9 \cdot 10^{-01}$ &
+                    $0.1 \pm 0.2$ & $7 \cdot 10^{-02}$ & $141 \pm 12$ & $0.0
+                    \pm 0.0$ \\
+                    crabs & $\mathbf{11 \pm 1}$ & $4 \cdot 10^{-05}$ & $0.0 \pm
+                    0.0$ & $8 \cdot 10^{-01}$ & $\mathbf{11 \pm 1}$ & $2 \cdot
+                    10^{-04}$ & $\mathbf{0.0 \pm 0.0}$ & $2 \cdot 10^{-05}$ &
+                    $13 \pm 3$ & $0.0 \pm 0.0$ \\
+                    GAGurine & $61 \pm 7$ & $4 \cdot 10^{-01}$ & $0.0 \pm 0.1$
+                    & $3 \cdot 10^{-03}$ & $62 \pm 7$ & $5 \cdot 10^{-01}$ &
+                    $\mathbf{0.1 \pm 0.2}$ & $4 \cdot 10^{-04}$ & $62 \pm 7$ &
+                    $0.0 \pm 0.0$ \\
+                    geyser & $105 \pm 7$ & $9 \cdot 10^{-01}$ & $0.1 \pm 0.3$ &
+                    $9 \cdot 10^{-01}$ & $105 \pm 6$ & $9 \cdot 10^{-01}$ &
+                    $0.2 \pm 0.3$ & $6 \cdot 10^{-01}$ & $104 \pm 6$ & $0.1 \pm
+                    0.2$ \\
+                    gilgais & $51 \pm 6$ & $5 \cdot 10^{-01}$ & $0.1 \pm 0.1$ &
+                    $1 \cdot 10^{-01}$ & $49 \pm 6$ & $6 \cdot 10^{-01}$ &
+                    $\mathbf{1.1 \pm 0.7}$ & $2 \cdot 10^{-05}$ & $49 \pm 7$ &
+                    $0.3 \pm 0.3$ \\
+                    topo & $69 \pm 18$ & $1 \cdot 10^{+00}$ & $0.1 \pm 0.5$ &
+                    $1 \cdot 10^{+00}$ & $71 \pm 20$ & $1 \cdot 10^{+00}$ &
+                    $\mathbf{1.7 \pm 1.4}$ & $3 \cdot 10^{-07}$ & $70 \pm 17$ &
+                    $0.0 \pm 0.0$ \\
+                    mcycle & $66 \pm 9$ & $9 \cdot 10^{-01}$ & $0.2 \pm 0.3$ &
+                    $7 \cdot 10^{-03}$ & $66 \pm 8$ & $9 \cdot 10^{-01}$ &
+                    $\mathbf{0.3 \pm 0.3}$ & $7 \cdot 10^{-06}$ & $65 \pm 9$ &
+                    $0.0 \pm 0.1$ \\
+                    cpus & $\mathbf{7 \pm 4}$ & $2 \cdot 10^{-04}$ &
+                    $\mathbf{0.7 \pm 1.0}$ & $5 \cdot 10^{-04}$ & $\mathbf{7
+                    \pm 5}$ & $3 \cdot 10^{-04}$ & $\mathbf{1.2 \pm 0.8}$ & $6
+                    \cdot 10^{-08}$ & $16 \pm 10$ & $0.0 \pm 0.0$ \\
+                    \bottomrule
+                \end{tabular}}
+            \end{sc}
+        \end{tiny}
+    \end{center}
+    \addtolength{\tabcolsep}{3pt}
+    \renewcommand{\arraystretch}{1.0}% Tighter
+\end{table*}
+In the \ac{QR} and \ac{CSC} case, one can use the squared \ac{vv-RKHS} norm
+($\Omega^{\text{RIDGE}}$) to regularize the optimization problem
+\begin{align}\label{problem:ermsupervised}
+    \argmin_{h \in \mcH_K} \sampledempiricalrisk(h) +
+     \frac{\lambda}{2}\norm{h}_{\mcH_K}^2 \condition{$\lambda>0$}.
+\end{align}
+% The regularization term at stake here is the \ac{vv-RKHS} norm $\norm{h}^2_{\mcH_K}$.
+% It is the
+% counterpart of the classical multi-task regularization term introduced in
+% \citep{sangnier2016joint}, compatible with an
+% infinite number of tasks. The kernel acts as a natural regularizer by constraining
+% the solution to be taken in a ball of a finite radius within the \ac{vv-RKHS},
+% whose shape is controlled by both $k_{\mcX}$ and $k_{\Theta}$.\par
+%The representer proposition not only reduces the
+%problem to a finite-dimensional task,
+%Infinite-task learning within vv-RKHS can also be studied under the angle of generalization bounds.
+Below we give generalization error to the resulting estimate by stability
+argument \citep{bousquet2002stability}, extending the work of
+\citet{Audiffren13} to Infinite-Task Learning. The proposition (finite sample
+bounds are given in \cref{corollary:beta_stab_qr}) instantiates the guarantee
+for the QMC scheme.
+%
+\begin{proposition}[Generalization]%
+    \label{proposition:generalization_supervised}
+    Let $h^* \in \mcH_K$ be the solution of \cref{problem:ermsupervised} for
+    the \ac{QR} or \ac{CSC} problem with \ac{QMC} approximation. Under mild
+    conditions on the kernels $k_{\mcX},k_{\Theta}$ and $\probability_{X,Y}$,
+    stated in the supplement, one has
+    \begin{align}\label{equation:excess_risk}
+        \risk(h^*) &\leq \widetilde{R}_{\mcS}(h^*) +
+        \mathcal{O}_{\probability_{X,Y}} \left (\frac{1}{\sqrt{\lambda n}}
+        \right ) + \mathcal{O} \left ( \frac{\log(m)}{\sqrt{\lambda}m} \right).
+    \end{align}
+\end{proposition}
+\begin{sproof}
+    The approximation resulting from the $\probability_{X, Y}$ sampling and the
+    inexact integration is controlled by $\beta$-stability
+    \citep{kadri2015operator}, and \ac{QMC}
+    results,\footnote{The \ac{QMC} approximation may involve the Sobol sequence
+    with discrepancy $m^{-1}\log(m)^s$ ($s=dim(\hyperparameterspace)$).}
+    respectively.
+\end{sproof}
+
+\textbf{Remarks:}
+\begin{itemize}[labelindent=0em,leftmargin=*,topsep=0cm,partopsep=0cm,
+                parsep=0cm,itemsep=0cm]
+  \item \textbf{$(n,m)$ trade-off}: The proposition reveals the interplay
+  between the two approximations, $n$ (the number of training samples) and $m$
+  (the number of locations taken in the integral approximation), and allows to
+  identify the regime in $\lambda=\lambda(n,m)$ driving the excess risk to
+  zero. Indeed by choosing $m=\sqrt{n}$ and discarding logarithmic factors for
+  simplicity, $\lambda\gg \frac{1}{n}$ is sufficient.    \vspace{2mm}
+ \item The \textbf{assumptions} imposed are rather mild: boundedness on both
+ kernels and the random variable $Y$, as well as some smoothness of the kernels.
+\end{itemize}
+
+
+
+
+
+
+
+
+
+%

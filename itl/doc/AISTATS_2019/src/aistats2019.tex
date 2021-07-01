@@ -1,0 +1,131 @@
+\input{preamble}
+\usepackage{enumitem}
+%
+\linespread{0.995}
+\begin{document}
+% \ifthenelse{\isundefined{\final}}{
+% \twocolumn[
+% \aistatstitle{Infinite Task Learning in RKHSs}
+% \aistatsauthor{Author 1 \And
+%                Author 2 \And
+%                Author 3 \And
+%                Author 4 \And
+%                Author 5}
+% \aistatsaddress{Institution 1 \And
+%                 Institution 2 \And
+%                 Institution 3 \And
+%                 Institution 4 \And
+%                 Institution 5 }
+% ]
+% }{
+\runningauthor{
+Romain Brault, Alex Lambert, Zolt\'an Szab\'o, Maxime Sangnier, Florence d'Alch{\'e}-Buc
+}
+\renewcommand*{\thefootnote}{$\dagger$}
+\twocolumn[
+  \aistatstitle{Infinite Task Learning in RKHSs}
+  \aistatsauthor{ Romain Brault$^1$\footnotemark
+                \hspace{0.2cm} Alex Lambert$^2$\footnotemark
+                \hspace{0.2cm} Zolt\'an Szab\'o$^3$
+                \hspace{0.2cm} Maxime Sangnier$^4$
+                \hspace{0.2cm} Florence d'Alch{\'e}-Buc$^2$}
+                \aistatsaddress{$^1$CentraleSup\'elec;
+                                \hspace*{0.35cm}$^2$T\'el\'ecom ParisTech, IP Paris;
+                                \hspace*{0.35cm}$^3$\'Ecole Polytechnique, IP Paris;
+                                \hspace*{0.35cm}$^4$Sorbonne Universit\'e.}
+  % \aistatsaddress{L2S, \\
+  %                 Centrale-Sup\'elec.
+  %                 % Universit\'e  Paris-Saclay, \\
+  %                 \And
+  %                 % Gif sur Yvettes, France.
+  %                 LTCI, \\
+  %                 T\'el\'ecom ParisTech.
+  %                 % Universit\'e  Paris-Saclay, \\
+  %                 % Paris, France.
+  %                 \And
+  %                 CMAP, \\
+  %                 \'Ecole Polytechnique.
+  %                 % Palaiseau, France.
+  %                 \And
+  %                 LPSM, \\
+  %                 Sorbonne Universit\'e.
+  %                 % Paris, France.
+  %                 \And
+  %                 LTCI, \\
+  %                 T\'el\'ecom ParisTech.
+  %                 % Universit\'e  Paris-Saclay, \\
+  %                 % Paris, France.
+  %                 }
+                  ]
+\footnotetext{Both authors contributed equally to this work.}
+\renewcommand*{\thefootnote}{\arabic{footnote}}
+\setcounter{footnote}{0}
+
+\begin{abstract}
+Machine learning has witnessed tremendous success in solving tasks depending on
+a single hyperparameter. When considering simultaneously a finite number of
+tasks, multi-task learning enables one to account for the similarities of the tasks
+via appropriate regularizers. A step further consists of learning a continuum
+of tasks for various loss functions. A promising approach, called
+\emph{\acl{PTL}}, has paved the way in the continuum setting for affine models
+and piecewise-linear loss functions.  In this work, we introduce a novel
+approach called \emph{\acl{ITL}}: its goal is to learn a function whose output
+is a function over the hyperparameter space.  We leverage tools from
+operator-valued kernels and the associated \acl{vv-RKHS} that provide an
+explicit control over the role of the hyperparameters, and also allows us to
+consider new type of constraints. We provide generalization guarantees to the
+suggested scheme and illustrate its efficiency in cost-sensitive
+classification, quantile regression and density level set estimation.
+\end{abstract}
+%
+\section{INTRODUCTION}
+\label{section:introduction}
+\input{introduction.tex}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{FROM PARAMETERIZED TO INFINITE TASK LEARNING}
+\label{section:infinite_tasks}
+\input{infinite_tasks.tex}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{SOLVING THE PROBLEM IN \acp{RKHS}}
+\label{section:results}
+\input{results.tex}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{Extension to an unsupervised task}
+% \label{section:extension}
+% \input{extension.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \section{Related work}
+% \label{section:related_work}
+% \input{related_work.tex}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Numerical Examples}
+\label{section:numerical_experiments}
+\input{experiments.tex}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%\section{Discussion}
+%\input{discussion.tex}
+\section{Conclusion}
+\label{section:conclusion}
+\input{conclusion.tex}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\section*{Acknowledgments}
+The authors thank Arthur Tenenhaus for some insightful discussions. This work
+was supported by the Labex \emph{DigiCosme} (project ANR-11-LABEX-0045-DIGICOSME)
+ and the industrial chair \emph{
+Machine Learning for Big Data} at T\'el\'ecom ParisTech.
+
+%\afterpage{\clearpage}%
+%\renewcommand*{\bibfont}{\scriptsize}
+\printbibliography
+\clearpage
+\include{appendix}
+%
+\end{document}

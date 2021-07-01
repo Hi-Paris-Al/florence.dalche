@@ -1,0 +1,148 @@
+%
+\documentclass[twoside]{article}
+% \linespread{0.99}
+%
+%\usepackage{float}
+\setlength{\textfloatsep}{11pt}
+\usepackage{floatrow}
+\usepackage{ifthen}
+\usepackage{xspace}
+\usepackage[T1]{fontenc}
+\usepackage[OT1]{eulervm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{ftnright}
+\usepackage{sepfootnotes}
+\ifthenelse{\NOT\isundefined{\draft}\OR\NOT\isundefined{\final}}{
+    \usepackage{acro}
+    \acsetup{
+        list-style     = tabular,
+        single         = true ,
+        sort           = true ,
+        cite-cmd       = \citep ,
+        group-citation = true ,
+        group-cite-cmd = \citealp
+    }
+}{
+    \usepackage{acro}
+    \acsetup{
+        list-style     = tabular,
+        single         = true ,
+        sort           = true ,
+        cite-cmd       = \citep ,
+        group-citation = true ,
+        group-cite-cmd = \citealp
+    }
+    %\newcommand\ac[1]{#1}
+    %\newcommand\acs[1]{#1}
+    %\newcommand\acp[1]{#1}
+    %\newcommand\acl[1]{#1}
+    %\newcommand\aclp[1]{#1}
+    %\newcommand\acf[1]{#1}
+    %\newcommand\acfp[1]{#1}
+}
+\usepackage[colorlinks=true,
+            linkcolor=Blue,
+            urlcolor=Blue,
+            citecolor=Blue]{hyperref}
+\usepackage{ragged2e}
+\usepackage{microtype}
+\usepackage{dirtytalk}
+\usepackage{pdflscape}
+\usepackage{afterpage}
+\usepackage{fancyvrb}
+\usepackage{placeins}
+\usepackage{csquotes}
+\usepackage{filecontents}
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{nicefrac}
+\usepackage[tableposition=top]{caption}
+\usepackage[position=top]{subcaption}
+% \usepackage[round]{natbib}
+% \renewcommand{\bibname}{References}
+% \renewcommand{\bibsection}{\subsubsection*{\bibname}}
+\usepackage[backend=biber, style=authoryear-comp, maxcitenames=1,
+            natbib=true, bibencoding=utf8, hyperref=true,
+            abbreviate=true, firstinits=true,
+            %sorting=ynt,
+            backref=true, citetracker=true]{biblatex}
+%\usepackage[textwidth=2.0cm, textsize=scriptsize]{todonotes}
+% modification to natbib citations
+\VerbatimFootnotes
+\usepackage[export]{adjustbox}
+\usepackage{pgf}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usetikzlibrary{pgfplots.groupplots}
+\usetikzlibrary{external}
+\usetikzlibrary{quotes,angles}
+\usetikzlibrary{cd}
+\usetikzlibrary{matrix}
+\usetikzlibrary{calc}
+\makeatletter
+\tikzset{%
+    column sep/.code=\def\pgfmatrixcolumnsep{\pgf@matrix@xscale*(#1)},
+    row sep/.code   =\def\pgfmatrixrowsep{\pgf@matrix@yscale*(#1)},
+    matrix xscale/.code=%
+    \pgfmathsetmacro\pgf@matrix@xscale{\pgf@matrix@xscale*(#1)},
+    matrix yscale/.code=%
+    \pgfmathsetmacro\pgf@matrix@yscale{\pgf@matrix@yscale*(#1)},
+    matrix scale/.style={/tikz/matrix xscale={#1},/tikz/matrix yscale={#1}}}
+\def\pgf@matrix@xscale{1}
+\def\pgf@matrix@yscale{1}
+\makeatother
+\pgfplotsset{compat=newest}
+\usepackage{amsmath, amsthm, amssymb, amsfonts, bbm}
+\usepackage[american]{babel}
+\usepackage{braket}
+\usepackage{colonequals}
+\usepackage{thmtools}
+\usepackage{nameref}
+\usepackage[capitalise]{cleveref}
+\usepackage{mathtools}
+\usepackage[algo2e, ruled, linesnumbered]{algorithm2e}
+\usepackage{tablefootnote}
+\usepackage{breqn}
+\usepackage{commands}
+\usepackage{paralist, enumitem}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{booktabs}
+%\usepackage{tabularx}
+\usepackage{ltablex}
+\usepackage{chngpage}
+%\usepackage{threeparttablex}
+\usepackage[mathscr]{eucal}
+\usepackage{floatflt}
+\setlength{\extrarowheight}{3pt}
+\newcommand{\tableheadline}[1]{\multicolumn{1}{c}{\spacedlowsmallcaps{#1}}}
+\newcommand{\myfloatalign}{\centering}
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+\usepackage[symbol]{footmisc}
+%
+\creflabelformat{equation}{#2(\textup{#1})#3}
+%
+% \usepackage[margin=1in]{geometry}
+% \usepackage{times}
+%
+\usepackage[accepted]{aistats2019}
+% If your paper is accepted and the title of your paper is very long,
+% the style will print as headings an error message. Use the following
+% command to supply a shorter title of your paper so that it can be
+% used as headings.
+%
+%\runningtitle{I use this title instead because the last one was very long}
+
+% If your paper is accepted and the number of authors is large, the
+% style will print as headings an error message. Use the following
+% command to supply a shorter version of the authors names so that
+% they can be used as headings (for example, use only the surnames)
+%
+%\runningauthor{Surname 1, Surname 2, Surname 3, ...., Surname n}
+%
+\addbibresource{references.bib}
+\floatsetup[table]{capposition=top}
+%

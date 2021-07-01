@@ -1,0 +1,487 @@
+The analysis of the generalization error will be performed using  the notion of
+uniform stability introduced in \citep{bousquet2002stability}. For a derivation
+of generalization bounds in \ac{vv-RKHS}, we refer to
+\citep{kadri2016operator}.  In their framework, the goal is to minimize a risk
+which can be expressed as
+\begin{dmath}
+    R_{\trainingset,\lambda}(h) = \frac{1}{n} \sum_{i=1}^n \ell(y_i,h,x_i) +
+    \lambda \norm{h}_{\mcH_K}^2,
+\end{dmath}
+where $\trainingset = ((x_1,y_1),\ldots,(x_n,y_n))$ are \ac{iid} inputs and
+$\lambda > 0$.  We almost recover their setting by using losses defined as
+\begin{dmath*}
+  \ell \colon
+  \begin{cases}
+      \reals \times \mcH_K \times \mcX &\to ~ \mathbb{R}      \\
+      (y,h,x)  & \mapsto  \widetilde{V}(y,f(x)),
+  \end{cases}
+\end{dmath*}
+where $\widetilde{V}$ is a loss associated to some local cost defined in
+\cref{equation:integrated_cost}. Then, they study the stability of the
+algorithm which, given a dataset $\trainingset$, returns
+
+\begin{dmath} \label{equation:algo}
+    \minimizer{h}_{\trainingset} = \argmin_{h \in \mcH_K}
+    R_{\trainingset,\lambda}(h).
+\end{dmath}
+
+There is a slight difference between their setting and ours, since they use
+losses defined for some $y$ in the output space of the \ac{vv-RKHS}, but this
+difference has no impact on the validity of the proofs in our case. The use of
+their theorem requires some assumption that are listed below. We recall the
+shape of the \ac{OVK} we use : $K: (x,z) \in \mcX \times \mcX \mapsto
+k_{\mcX}(x,z) I_{\mcH_{k_{\hyperparameterspace}}} \in
+\mathcal{L}(\mcH_{k_{\hyperparameterspace}})$, where $k_{\mcX}$ and
+$k_{\hyperparameterspace}$ are both bounded scalar-valued kernels, in other
+words there exist $(\kappa_{\mcX},\kappa_{\Theta}) \in \reals^2$ such that
+$\underset{x \in \mcX}{\sup}~ k_{\mcX}(x,x) < \kappa_{\mcX}^2$ and
+$\underset{\theta \in \Theta}{\sup}~ k_{\Theta}(\theta,\theta) <
+\kappa_{\Theta}^2$.
+
+\begin{assumption} \label{assumption:1}
+    $\exists \kappa > 0$ such that $\forall x \in \mcX$,
+    $\norm{K(x,x)}_{\mathcal{L}(\mcH_{k_{\hyperparameterspace}})} \leq
+    \kappa^2$.
+\end{assumption}
+\begin{assumption} \label{assumption:2}
+    $\forall h_1,h_2 \in \mcH_{k_{\hyperparameterspace}}$, the function
+    $(x_1,x_2) \in \mcX \times \mcX \mapsto \langle K(x_1,x_2) h_1,h_2
+    \rangle_{\mcH_{k_{\hyperparameterspace}}} \in \reals$ \condition{is
+    measurable.}
+\end{assumption}
+\begin{remark}
+    Assumptions \ref{assumption:1}, \ref{assumption:2} are satisfied for our
+    choice of kernel.
+\end{remark}
+\begin{assumption} \label{assumption:3}
+    The application $(y,h,x) \mapsto \ell(y,h,x)$ is $\sigma$-admissible,
+    \ac{ie} convex with respect to $f$ and Lipschitz continuous with respect to
+    $f(x)$, with $\sigma$ as its Lipschitz constant.
+\end{assumption}
+\begin{assumption} \label{assumption:4}
+    $\exists \xi \geq 0$ such that $\forall (x,y) \in \mcX \times \mcY$ and
+    $\forall \trainingset$  training set,
+    $ \ell(y,\minimizer{h}_{\trainingset},x) \leq \xi$.
+\end{assumption}
+%
+\begin{definition}
+Let $\trainingset = \left((x_i,y_i)\right)_{i=1}^n$ be the training data.
+We call $\trainingset^i$ the training data
+$\trainingset^i = ((x_1,y_1),\ldots,(x_{i-1},y_{i-1}),(x_{i+1},y_{i+1}),
+\ldots,(x_n,y_n))$, $ 1 \leq i \leq n$.
+\end{definition}
+
+\begin{definition}A learning algorithm mapping a dataset
+    $\trainingset$ to a function $\minimizer{h}_{\trainingset}$
+    is said to be $\beta$-uniformly stable with
+    respect to the loss function $\ell$ if $\forall n \geq 1$,
+    $\forall 1 \leq i \leq n$, $\forall \trainingset \text{ training set}$,
+    $||\ell(\cdot,\minimizer{h}_{\trainingset},\cdot) -
+        \ell(\cdot, \minimizer{h}_{\trainingset^{ i}},\cdot)||_{\infty}
+        \leq \beta$.
+\end{definition}
+%
+\begin{proposition} \label{proposition:bousquet_generalization}
+    \citep{bousquet2002stability} Let $\trainingset \mapsto
+        \minimizer{h}_{\trainingset}$ be a learning algorithm
+    with uniform stability $\beta$ with respect to a loss $\ell$ satisfying
+    \cref{assumption:4}. Then $\forall n \geq 1$, $\forall \delta \in (0,1)$,
+    with probability at least $1-\delta$ on the drawing of the samples, it
+    holds that
+    \begin{dmath*}
+        \risk(\minimizer{h}_{\trainingset}) \leq
+        \empiricalrisk(\minimizer{h}_{\trainingset}) + 2 \beta +
+        (4 \beta + \xi) \sqrt{\frac{\log{(1/\delta)}}{n}}.
+    \end{dmath*}
+\end{proposition}
+
+\begin{proposition} \citep{kadri2016operator} \label{proposition:kadri}
+Under assumptions
+\ref{assumption:1}, \ref{assumption:2}, \ref{assumption:3}, a learning algorithm
+that maps a training set $\trainingset$ to the function $\minimizer{h}_{\trainingset}$ defined in
+\cref{equation:algo} is $\beta$-stable with $\beta =
+\frac{\sigma^2 \kappa^2}{2 \lambda n }$.
+\end{proposition}
+
+\subsection{Quantile Regression}
+We recall that in this setting, $\hcost(\hyperparameter,y,h(x)(\hyperparameter)) =
+\max{(\hyperparameter(y-h(x)(\hyperparameter)),(1-\hyperparameter)(y-h(x)(\hyperparameter)))}$
+and the loss is
+\begin{dmath}
+  \ell \colon
+  \begin{cases}
+      \reals \times \mcH_K \times \mcX &\to ~ \mathbb{R}      \\
+      (y,h,x)  & \mapsto \frac{1}{m} \sum_{j=1}^m \max{(\theta_j(y-h(x)(\theta_j)),(\theta_j-1)(y-h(x)(\theta_j)))}.
+  \end{cases}
+\end{dmath}
+Moreover, we will assume that $|Y|$ is bounded by $B \in \mathbb{R}$ as a \ac{rv}. We will
+therefore verify the hypothesis for $y \in [-B,B]$ and not $y \in \reals$.
+\begin{lemma} \label{lemma:admissibility_qr}
+  In the case of the \ac{QR}, the loss $\ell$ is $\sigma$-admissible
+  with $\sigma = 2 \kappa_{\hyperparameterspace}$.
+\end{lemma}
+\begin{proof}
+  Let $h_1,h_2 \in \mcH_K$ and
+  $\hyperparameter \in [0,1]$. $\forall x,y \in \mcX \times \reals$, it holds that
+  \begin{dmath*}[compact]
+  \hcost(\hyperparameter,y,h_1(x)(\hyperparameter)) - \hcost(\hyperparameter,y , h_2(x)(\hyperparameter)) =
+  (\hyperparameter -t)(h_2(x)(\hyperparameter) - h_1(x)(\hyperparameter)) + (t-s)(y-h_1(x)(\hyperparameter)),
+  \end{dmath*}
+  where $s = \mathbf{1}_{y \leq h_1(x)(\hyperparameter)}$ and
+  $t = \mathbf{1}_{y \leq h_2(x)(\hyperparameter)}$. We consider all possible cases for
+  $t$ and $s$ :
+  \begin{compactitem}
+    \item $t = s = 0$ : $|(t-s)(y-h_1(x)(\hyperparameter)) |
+    \leq |h_2(x)(\hyperparameter) - h_1(x)(\hyperparameter)| $
+    \item $t = s = 1$ : $|(t-s)(y-h_1(x)(\hyperparameter)) |
+    \leq |h_2(x)(\hyperparameter) - h_1(x)(\hyperparameter)| $
+    \item $s=1$,$t=0$ : $|(t-s)(y-h_1(x)(\hyperparameter)) | = |h_1(x)(\hyperparameter) - y| \leq
+     |h_1(x)(\hyperparameter) - h_2(x)(\hyperparameter)| $
+    \item $s=0$,$t=1$ : $|(t-s)(y-h_1(x)(\hyperparameter)) | = |y - h_1(x)(\hyperparameter)| \leq
+    |h_1(x)(\hyperparameter) - h_2(x)(\hyperparameter)|$ because of the conditions on $t,s$.
+  \end{compactitem}
+  Thus $|\hcost(\hyperparameter,y,h_1(x)(\hyperparameter)) - \hcost(\hyperparameter,y , h_2(x)(\hyperparameter))| \leq
+  (\hyperparameter + 1) | h_1(x)(\hyperparameter) - h_2(x)(\hyperparameter) | \leq (\hyperparameter + 1) \kappa_{\hyperparameterspace}
+  || h_1(x) - h_2(x) ||_{\mcH_{k_{\hyperparameterspace}}}$.
+  By summing this expression over the $(\theta_j)_{j=1}^m$, we get that
+  \begin{dmath*}[compact]
+  |\ell(x,h_1,y) - \ell(x,h_2,y)| \leq \frac{1}{m} \sum_{j=1}^m (\hyperparameter_j+1) \kappa_{\hyperparameterspace}
+  || h_1(x) - h_2(x) ||_{\mcH_{k_{\hyperparameterspace}}} \leq
+  2 \kappa_{\hyperparameterspace} ||h_1(x) - h_2(x) ||_{\mcH_{k_{\hyperparameterspace}}}
+  \end{dmath*}
+  and $\ell$ is $\sigma$-admissible with $\sigma = 2 \kappa_{\hyperparameterspace}$.
+\end{proof}
+
+\begin{lemma} \label{lemma:majorant_h} Let $\trainingset=((x_1,y_1),\ldots,(x_n,y_n))$ be a training set and
+$\lambda > 0$. Then $\forall x , \hyperparameter \in \mcX \times (0,1)$, it holds that
+$|\minimizer{h}_{\trainingset}(x)(\hyperparameter)| \leq \kappa_{\mcX} \kappa_{\hyperparameterspace} \sqrt{\frac{B}{\lambda}}$.
+\end{lemma}
+\begin{proof} Since $\minimizer{h}_{\trainingset}$ is the output of our algorithm and $0 \in \mcH_K$,
+it holds that
+\begin{dmath*}[compact]
+\lambda ||\minimizer{h}_{\trainingset}||^2 \leq \frac{1}{nm} \sum_{i=1}^n \sum_{j=1}^m  \hcost(\hyperparameter_j,y_i,0)
+\leq \frac{1}{nm} \sum_{i=1}^n \sum_{j=1}^m \max{(\hyperparameter_j,1-\hyperparameter_j)} |y_i|
+\leq B.
+\end{dmath*}
+Thus $||\minimizer{h}_{\trainingset}|| \leq \sqrt{\frac{B}{\lambda}}$. Moreover,
+$\forall x , \hyperparameter \in \mcX \times (0,1)$,
+$|\minimizer{h}_{\trainingset}(x)(\hyperparameter)| =
+|\langle \minimizer{h}_{\trainingset}(x),k_{\hyperparameterspace}(\hyperparameter,\cdot) \rangle_{\mcH_{k_{\hyperparameterspace}}}|
+\leq ||\minimizer{h}_{\trainingset}(x)||_{\mcH_{k_{\hyperparameterspace}}} \kappa_{\hyperparameterspace}
+\leq ||\minimizer{h}_{\trainingset}||_{\mcH_{k_{\hyperparameterspace}}} \kappa_{\mcX} \kappa_{\hyperparameterspace}$
+which concludes the proof.
+\end{proof}
+
+\begin{lemma} \label{lemma:xi_qr} Assumption \ref{assumption:4} is satisfied for
+  $\xi = 2\left(B + \kappa_{\mcX} \kappa_{\hyperparameterspace} \sqrt{\frac{B}{\lambda}}\right)$.
+\end{lemma}
+
+\begin{proof}Let $\trainingset = ((x_1,y_1),\ldots,(x_n,y_n))$ be a training set and
+$\minimizer{h}_{\trainingset}$ be the output of our algorithm.
+  $\forall (x,y) \in \mcX \times [-B,B]$, it holds that
+  \begin{align*}
+    \ell(y,\minimizer{h}_{\trainingset},x) &=
+    \frac{1}{m} \sum_{j=1}^m \max{(\theta_j(y-\minimizer{h}_{\trainingset}(x)(\theta_j)),(\theta_j-1)(y-\minimizer{h}_{\trainingset}(x)(\theta_j)))}
+    \leq \frac{2}{m} \sum_{j=1}^m |y-\minimizer{h}_{\trainingset}(x)(\theta_j)| \\
+    &\leq \frac{2}{m} \sum_{j=1}^m |y| + |\minimizer{h}_{\trainingset}(x)(\theta_j)|
+    \leq 2\left (B + \kappa_{\mcX} \kappa_{\hyperparameterspace} \sqrt{\frac{B}{\lambda}}\right).
+  \end{align*}
+\end{proof}
+
+\begin{corollary} \label{corollary:beta_stab_qr}
+  The \ac{QR} learning algorithm defined in \cref{equation:h-objective-empir2}
+  is such that
+  $\forall n \geq 1$, $\forall \delta \in (0,1)$,
+  with probability at least $1-\delta$ on the drawing of the samples, it
+  holds that
+  \begin{dmath} \label{equation:beta_stab_qr}
+    \widetilde{\risk}(\minimizer{h}_{\trainingset}) \leq
+    \sampledempiricalrisk(\minimizer{h}_{\trainingset})
+    + \frac{4 \kappa_{\mcX}^2 \kappa_{\hyperparameterspace}^2}{ \lambda n} +
+    \left[\frac{8 \kappa_{\mcX}^2 \kappa_{\hyperparameterspace}^2}{ \lambda n} +
+    2\left(B + \kappa_{\mcX} \kappa_{\hyperparameterspace} \sqrt{\frac{B}{\lambda}} \right)\right]
+    \sqrt{\frac{\log{(1/\delta)}}{n}}.
+  \end{dmath}
+  \begin{proof} This is a direct consequence of \cref{proposition:kadri},
+    \cref{proposition:bousquet_generalization}, \cref{lemma:admissibility_qr} and
+    \cref{lemma:xi_qr}.
+  \end{proof}
+\end{corollary}
+
+\begin{definition}[Hardy-Krause variation] Let $\Pi$ be the set of subdivisions of the interval $\Theta = [0,1]$.
+  A subdivision will be denoted $\sigma = (\theta_1,\theta_2,\ldots,\theta_p)$
+  and $f \colon \Theta \to \reals$ be a function.
+  We call Hardy-Krause variation of the function $f$ the quantity
+    $\underset{\sigma \in \Pi}{\sup} ~ \sum_{i=1}^{p-1} |f(\theta_{i+1}) - f(\theta_i)|$.
+\end{definition}
+\begin{remark} \label{remark:continuity_mesh}
+  If $f$ is continuous, $V(f)$ is also the limit as the mesh of $\sigma$ goes to zero
+  of the above quantity.
+\end{remark}
+
+In the following, let $f \colon \theta \mapsto \expectation_{X,Y}[
+  \hcost(\hyperparameter,Y, \minimizer{h}_{\trainingset}(X)(\hyperparameter))]$.
+  This function is of primary importance for our analysis, since in the
+  Quasi Monte-Carlo setting, the bound of \cref{proposition:generalization_supervised}
+  makes sense only if the function $f$ has finite Hardy-Krause variation, which is
+  the focus of the following lemma.
+
+\begin{lemma} \label{lemma:finite_hk} Assume the boundeness of both scalar kernels
+  $k_{\mcX}$and $k_{\Theta}$.
+  Assume moreover that $k_{\Theta}$ is $\mathcal{C}^1$ and that its partial
+  derivatives are uniformly bounded by some constant $C$. Then
+  \begin{align}
+    V(f) \leq B + \kappa_{\mcX} \kappa_{\hyperparameterspace} \sqrt{\frac{B}{\lambda}} + 2\kappa_{\mcX} \sqrt{\frac{2BC}{\lambda}}.
+  \end{align}
+
+\end{lemma}
+\begin{proof}
+  It holds that
+  \begin{dmath*}
+    \sup_{\sigma \in \Pi} \sum_{i=1}^{p-1} \abs{f(\theta_{i+1}) -
+    f(\theta_i)}
+    = \sup_{\sigma \in \Pi} \sum_{i=1}^{p-1} \abs{\int \hcost(\theta_{i+1},y,
+    \minimizer{h}_{\trainingset}(x)(\theta_{i+1}))\mathrm{d}\probability_{X,Y}
+    - \int \hcost(\theta_{i},y, \minimizer{h}_{\trainingset}(x)(\theta_{i}))
+    \mathrm{d}\probability_{X,Y}}
+    = \sup_{\sigma \in \Pi} \sum_{i=1}^{p-1} \abs{\int \hcost(\theta_{i+1},y,
+    \minimizer{h}_{\trainingset}(x)(\theta_{i+1})) - \hcost(\theta_{i},y,
+    \minimizer{h}_{\trainingset}(x)(\theta_{i})) \mathrm{d}\probability_{X,Y}}
+    \leq \underset{\sigma \in \Pi}{\sup} ~ \sum_{i=1}^{p-1} \int
+    \abs{\hcost(\theta_{i+1},y, \minimizer{h}_{\trainingset}(x)(\theta_{i+1})) -
+    \hcost(\theta_{i},y, \minimizer{h}_{\trainingset}(x)(\theta_{i}))
+    }\mathrm{d}\probability_{X,Y}
+    \leq \sup_{\sigma \in \Pi} \int \sum_{i=1}^{p-1} \abs{\hcost(\theta_{i+1},y,
+    \minimizer{h}_{\trainingset}(x)(\theta_{i+1})) - \hcost(\theta_{i},y,
+    \minimizer{h}_{\trainingset}(x)(\theta_{i})) }\mathrm{d}\probability_{X,Y}.
+  \end{dmath*}
+  The supremum of the integral is smaller than the integral of the supremum, as
+  such
+  \begin{dmath} \label{equation:darboux_hk}
+    V(f) \leq \int V(f_{x,y}) \mathrm{d} \probability_{X,Y},
+  \end{dmath}
+  where $f_{x,y} \colon \theta \mapsto \hcost(\theta,y,
+  \minimizer{h}_{\trainingset}(x)(\theta))$ is the counterpart of the function
+  $f$ at point $(x,y)$. To bound this quantity, let us first bound locally $
+  V(f_{x,y})$. To that extent, we fix some $(x,y)$ in the following.  Since
+  $f_{x,y}$ is continuous (because $k_{\Theta}$ is $\mathcal{C}^1$), then using
+  \citet[Theorem 24.6]{choquet1969cours}, it holds that
+  \begin{dmath*}
+    V(f_{x,y}) = \lim_{\abs{\sigma}\to 0} \sum_{i=1}^{p-1}
+    \abs{f_{x,y}(\theta_{i+1}) - f_{x,y}(\theta_{i})}.
+  \end{dmath*}
+  Moreover since $k\in\mathcal{C}^1$ and $\partial k_\theta = (\partial_1
+  k)(\cdot, \theta)$ has a finite number of zeros for all
+  $\theta\in\mathcal{\hyperparameterspace}$, one can assume that in the
+  subdivision considered afterhand all the zeros (in $\theta$) of the residuals
+  $y - \minimizer{h}_{\trainingset}(x)(\theta) $ are present, so that $y
+  -\minimizer{h}_{\trainingset}(x)(\theta_{i+1})$ and $y -
+  \minimizer{h}_{\trainingset}(x)(\theta_{i})$ are always of the same sign.
+  Indeed, if not, create a new, finer subdivision with this property and work
+  with this one. Let us begin the proper calculation: let $\sigma =
+  (\theta_1,\theta_2,\ldots,\theta_p)$ be a subdivision of $\Theta$, it holds
+  that $\forall i \in \Set{1,\ldots,p-1}$:
+  \begin{dmath*}
+     \abs{f_{x,y}(\theta_{i+1}) - f_{x,y}(\theta_i)}
+    =
+    |\max{(\theta_{i+1}(y-\minimizer{h}_{\trainingset}(x)(\theta_{i+1})),
+    (1-\theta_{i+1})(y-\minimizer{h}_{\trainingset}(x)(\theta_{i+1})))} \quad -
+    \max{(\theta_{i}(y-\minimizer{h}_{\trainingset}(x)(\theta_{i})),
+    (1-\theta_{i+1})(y-\minimizer{h}_{\trainingset}(x)(\theta_{i})))}|.
+  \end{dmath*}
+  We now study the two possible outcomes for the residuals:
+  \begin{itemize}
+    \item If $y-h(x)(\theta_{i+1}) \geq 0$ and $y-h(x)(\theta_{i}) \geq 0$ then
+    \begin{dmath*}
+      \abs{f_{x,y}(\theta_{i+1}) - f_{x,y}(\theta_i)} =
+      \abs{\theta_{i+1}(y-\minimizer{h}_{\trainingset}(x)(\theta_{i+1})) -
+      \theta_{i}(y-\minimizer{h}_{\trainingset}(x)(\theta_{i}))}
+      = \abs{(\theta_{i+1} - \theta_i)y + (\theta_i - \theta_{i+1})\minimizer{h}_{\trainingset}(x)(\theta_{i+1})
+      + \theta_i (\minimizer{h}_{\trainingset}(x)(\theta_{i})
+      - \minimizer{h}_{\trainingset}(x)(\theta_{i+1}))}
+      \leq |(\theta_{i+1} - \theta_i)y| + |(\theta_i - \theta_{i+1})\minimizer{h}_{\trainingset}(x)(\theta_{i+1})|
+      + |\theta_i (\minimizer{h}_{\trainingset}(x)(\theta_{i})
+      - \minimizer{h}_{\trainingset}(x)(\theta_{i+1}))|.
+    \end{dmath*}
+    From \cref{lemma:majorant_h}, it holds that
+    $\minimizer{h}_{\trainingset}(x)(\theta_{i+1}) \leq \kappa_{\mcX}
+    \kappa_{\hyperparameterspace} \sqrt{\frac{B}{\lambda}}$.  Moreover,
+    \begin{dmath*}
+      \abs{\minimizer{h}_{\trainingset}(x)(\theta_{i})
+      - \minimizer{h}_{\trainingset}(x)(\theta_{i+1})}
+      = \abs{\inner{h(x) , k_{\Theta}(\theta_{i},\cdot) -
+      k_{\Theta}(\theta_{i+1},\cdot)}_{\mcH_{k_{\Theta}}}}
+      \leq \norm{h(x)}_{\mcH_{k_{\Theta}}} \norm{k_{\Theta}(\theta_{i},\cdot) -
+      k_{\Theta}(\theta_{i+1},\cdot)}_{\mcH_{k_{\Theta}}}
+      \leq \kappa_{\mcX} \sqrt{\frac{B}{\lambda}} \sqrt{\abs{
+      k_{\Theta}(\theta_{i},\theta_i) + k_{\Theta}(\theta_{i+1},\theta_{i+1})
+      - 2  k_{\Theta}(\theta_{i+1},\theta_{i}) }}
+      \leq  \kappa_{\mcX} \sqrt{\frac{B}{\lambda}} \left (
+      \sqrt{\abs{k_{\Theta}(\theta_{i+1},\theta_{i+1}) -
+      k_{\Theta}(\theta_{i+1},\theta_{i})}} +
+       \sqrt{\abs{k_{\Theta}(\theta_{i},\theta_{i}) -
+       k_{\Theta}(\theta_{i+1},\theta_{i}) }} \right ).
+    \end{dmath*}
+    Since $k_{\Theta}$ is $\mathcal{C}^1$, with partial derivatives uniformly
+    bounded by $C$, $\abs{k_{\Theta}(\theta_{i+1},\theta_{i+1}) -
+    k_{\Theta}(\theta_{i+1},\theta_{i})} \leq C(\theta_{i+1}-\theta_i)$ and $
+    \abs{k_{\Theta}(\theta_{i},\theta_{i}) -
+    k_{\Theta}(\theta_{i+1},\theta_{i})} \leq C(\theta_{i+1}-\theta_i)$ so that
+    $\abs{\minimizer{h}_{\trainingset}(x)(\theta_{i}) -
+    \minimizer{h}_{\trainingset}(x)(\theta_{i+1})} \leq \kappa_{\mcX}
+    \sqrt{\frac{2BC}{\lambda}} \sqrt{\theta_{i+1}-\theta_i}$
+    and overall
+    \begin{dmath*}
+      \abs{f_{x,y}(\theta_{i+1}) - f_{x,y}(\theta_i)} \leq \left( B +
+      \kappa_{\mcX} \kappa_{\hyperparameterspace} \sqrt{\frac{B}{\lambda}}
+      \right) (\theta_{i+1} - \theta_i) + \kappa_{\mcX}
+      \sqrt{\frac{2BC}{\lambda}} \sqrt{\theta_{i+1}-\theta_i}.
+    \end{dmath*}
+    \item If $y-h(x)(\theta_{i+1}) \leq 0$ and $y-h(x)(\theta_{i}) \leq 0$ then
+    $\abs{f_{x,y}(\theta_{i+1}) - f_{x,y}(\theta_i)} =
+    \abs{(1-\theta_{i+1})(y-\minimizer{h}_{\trainingset}(x)(\theta_{i+1})) -
+    (1-\theta_{i})(y-\minimizer{h}_{\trainingset}(x)(\theta_{i}))}
+    \leq \abs{\minimizer{h}_{\trainingset}(x)(\theta_{i}) -
+    \minimizer{h}_{\trainingset}(x)(\theta_{i+1})} +
+    \abs{(\theta_{i+1} - \theta_i)y} + \abs{(\theta_i -
+    \theta_{i+1})\minimizer{h}_{\trainingset}(x)(\theta_{i+1})}
+    + \abs{\theta_i (\minimizer{h}_{\trainingset}(x)(\theta_{i})
+    - \minimizer{h}_{\trainingset}(x)(\theta_{i+1}))}$
+  so that with similar arguments one gets
+  \begin{dmath} \label{equation:sign_hk}
+    \abs{f_{x,y}(\theta_{i+1}) - f_{x,y}(\theta_i)} \leq \left( B +
+    \kappa_{\mcX} \kappa_{\hyperparameterspace} \sqrt{\frac{B}{\lambda}}
+    \right) (\theta_{i+1} - \theta_i) + 2\kappa_{\mcX}
+    \sqrt{\frac{2BC}{\lambda}} \sqrt{\theta_{i+1}-\theta_i}.
+  \end{dmath}
+  \end{itemize}
+  Therefore, regardless of the sign of the residuals $y-h(x)(\theta_{i+1})$ and
+  $y-h(x)(\theta_{i})$, one gets \cref{equation:sign_hk}. Since the square root
+  function has Hardy-Kraus variation of $1$ on the interval $\Theta = [0,1]$,
+  it holds that
+  \begin{dmath*}
+    \underset{\sigma \in \Pi}{\sup} \sum_{i=1}^{p-1} |f_{x,y}(\theta_{i+1}) -
+    f_{x,y}(\theta_i)| \leq B + \kappa_{\mcX} \kappa_{\hyperparameterspace}
+    \sqrt{\frac{B}{\lambda}} + 2\kappa_{\mcX} \sqrt{\frac{2BC}{\lambda}}.
+  \end{dmath*}
+  Combining this with \cref{equation:darboux_hk} finally gives
+  \begin{dmath*}
+    V(f) \leq  B + \kappa_{\mcX} \kappa_{\hyperparameterspace}
+    \sqrt{\frac{B}{\lambda}} + 2\kappa_{\mcX} \sqrt{\frac{2BC}{\lambda}}.
+  \end{dmath*}
+\end{proof}
+
+
+\begin{lemma} \label{lemma:hardy_krause} Let $R$ be the risk defined in
+\cref{equation:h-objective} for the quantile regression problem. Assume that
+$(\theta)_{j=1}^m$ have been generated via the Sobol sequence and that
+$k_{\Theta}$ is $\mathcal{C}^1$ and that its partial derivatives are uniformly
+bounded by some constant $C$.
+  % and that the kernel $\mcH_{k_{\hyperparameterspace}}$ is
+  % $\mathcal{C}^1$ with uniformly bounded partial derivatives over the space, that is
+  % $\exists C \in \mathbb{R}$, $\forall (\theta_1,\theta_2) \in \Theta$,
+  % $\frac{\partial k_{\Theta}}{\partial x}(\theta_1,\theta_2) \leq C$.
+  Then
+  % $|R(\minimizer{h}_{\trainingset}) - \widetilde{R}(\minimizer{h}_{\trainingset})|
+    % = \mathcal{O}\left(\frac{\log(m)}{m}\right)$.
+    \begin{align}
+      |R(\minimizer{h}_{\trainingset}) - \widetilde{R}(\minimizer{h}_{\trainingset})| \leq
+      \left (B + \kappa_{\mcX} \kappa_{\hyperparameterspace} \sqrt{\frac{B}{\lambda}} + 2\kappa_{\mcX} \sqrt{\frac{2BC}{\lambda}} \right) \frac{\log(m)}{m}.
+    \end{align}
+  \end{lemma}
+  \begin{proof}
+    Let $f \colon \theta \mapsto
+    \expectation_{X,Y}[
+    \hcost(\hyperparameter,Y, \minimizer{h}_{\trainingset}(X)(\hyperparameter))]$. It holds that
+    $|R(\minimizer{h}_{\trainingset}) - \widetilde{R}(\minimizer{h}_{\trainingset})|
+      \leq V(f) \frac{\log(m)}{m}$
+    according to classical Quasi-Monte Carlo approximation results, where $V(f)$
+    is the Hardy-Krause variation of $f$. \cref{lemma:finite_hk} allows then to conclude.
+
+    % Indeed, let $x,y \in \mcX \times [-B,B]$. Consider
+    % $g \colon \theta \mapsto
+    % \hcost(\hyperparameter,y, \minimizer{h}_{\trainingset}(x)(\hyperparameter))]$.
+    % $g$ is continuous as composition of continuous functions, and therefore
+    % according to \cref{remark:continuity_mesh},
+    % $V(g)$ is the limit as the mesh of the subdivison goes to zero of \cref{equation:VHK}.
+    % Let $(\theta_i)_{i=1}^n$ be a subdivison of $\Theta$. Assume that $y-h(x)(\theta_j)$
+    % and $y-h(x)(\theta_{j+1})$ have the same sign, say positive.
+    %
+    % Because of the comment above, this is the only case to be of interest, since
+    % and since $\minimizer{h}_{\trainingset}(x)$ is continuous
+    % we can assume that for all
+    % $j$, $y-h(x)(\theta_j)$ and $y-\minimizer{h}_{\trainingset}(x)(\theta_{j+1})$
+    % have the same sign (it only depends on local properties of $\minimizer{h}_{\trainingset}(x)$).
+    %  Let $1 \leq j \leq n$, suppose $\minimizer{h}_{\trainingset}(x)(\theta_{j+1}) \geq 0$, it holds that
+    % \begin{align*}
+    %   |g(\theta_{j+1}) - g(\theta_j)| &=
+    %   |\max{(\theta_{j+1} (y-h(x)(\theta_{j+1})),
+    %         (\theta_{j+1}-1)(y-h(x)(\theta_{j+1})))} \\
+    %      &\quad - \max{(\theta_{j} (y-h(x)(\theta_{j})),
+    %             (\theta_{j}-1)(y-h(x)(\theta_{j})))}| \\
+    %       &= |\theta_{j+1} (y-h(x)(\theta_{j+1}) - \theta_{j} (y-h(x)(\theta_{j})) | \\
+    %       &= |(\theta_{j+1}-\theta_j) y + \theta_{j} h(x)(\theta_{j}) - \theta_{j+1} h(x)(\theta_{j+1}) | \\
+    %       &\leq |\theta_{j+1}-\theta_j| B + |\theta_{j} h(x)(\theta_{j}) - \theta_{j+1} h(x)(\theta_{j+1})|.
+    % \end{align*}
+    % But we also have
+    % \begin{dmath*}
+    %   |\theta_{j} h(x)(\theta_{j}) - \theta_{j+1} h(x)(\theta_{j+1})| =
+    %   |\theta_{j} h(x)(\theta_{j}) - \theta_{j+1} h(x)(\theta_{j}) + \theta_{j+1} h(x)(\theta_{j}) - \theta_{j+1} h(x)(\theta_{j+1})| \\
+    %   \leq |\theta_{j+1}-\theta_j| |h(x)(\theta_j)| + |\theta_{j+1}( h(x)(\theta_{j}) - h(x)(\theta_{j+1}) )|.
+    % \end{dmath*}
+    % According to \cref{lemma:majorant_h}, $|h(x)(\theta_j)| \leq \kappa_{\mcX} \kappa_{\hyperparameterspace} \sqrt{\frac{B}{\lambda}}$,
+    % so it only remains to bounds uniformly in $x$ the second term
+    % \begin{align*}
+    %   | h(x)(\theta_{j}) - h(x)(\theta_{j+1})| &=
+    %   \langle h(x) , k_{\Theta}(\cdot,\theta_j) -  k_{\Theta}(\cdot,\theta_{j+1}) \rangle_{\mcH_{k_{\Theta}}}\\
+    %   &\leq || h(x) ||_{\mcH_{k_{\Theta}}} (k_{\Theta}(\theta_{j+1},\theta_{j+1}) - k_{\Theta}(\theta_{j},\theta_{j+1})
+    %   + k_{\Theta}(\theta_{j+1},\theta_{j}) - k_{\Theta}(\theta_{j},\theta_{j}))\\
+    %    &\leq 2 C || h(x) ||_{\mcH_{k_{\Theta}}} |\theta_{j+1}-\theta_j|.
+    % \end{align*}
+    % Combining all theses inequalities, we get the stated result.
+     \end{proof}
+
+% \begin{remark} For the kernels used in practice, such as the Gaussian kernel,
+%   and absolutely continuous probability measure ${\probability_{X,Y}}$ wrt the
+%   Lebesgue measure, $f$ defined above has finite Hardy-Krause variation.
+% \end{remark}
+
+\begin{proof} [Proof of \cref{proposition:generalization_supervised}]
+  Combine \cref{lemma:hardy_krause} and \cref{corollary:beta_stab_qr} to
+  get an asymptotic behaviour as $n,m \to \infty$.
+\end{proof}
+
+\subsection{Cost-Sensitive Classification}
+In this setting, the cost is $\hcost(\hyperparameter,y,h(x)(\hyperparameter)) =
+\abs{\frac{\theta + 1}{2} - \indicator{\Set{-1}(y)}}\abs{1
+- yh_{\theta}(x)}_{+}$
+and the loss is
+\begin{dmath*}
+  \ell \colon
+  \begin{cases}
+      \reals \times \mcH_K \times \mcX &\to ~ \mathbb{R}      \\
+      (y,h,x)  & \mapsto \frac{1}{m} \sum_{j=1}^m \abs{\frac{\theta_j + 1}{2} -
+      \indicator{\Set{-1}}(y)}\abs{1
+      - yh_{\theta_j}(x)}_{+}.
+  \end{cases}
+\end{dmath*}
+It is easy to verify in the same fashion as for \ac{QR}
+that the properties above still hold, but with constants
+    $\sigma  =  \kappa_{\hyperparameterspace}$, $\beta  = \frac{\kappa_{\mcX}^2 \kappa_{\hyperparameterspace}^2}{2 \lambda n}$,
+    $\xi  = 1 + \frac{\kappa_{\mcX}\kappa_{\hyperparameterspace}}{\sqrt{\lambda}}$.
+so that we get analogous properties to \ac{QR}.
+\begin{corollary} \label{corollary:beta_stab_csc}
+  The \ac{CSC} learning algorithm defined in \cref{equation:h-objective-empir2}
+  is such that
+  $\forall n \geq 1$, $\forall \delta \in (0,1)$,
+  with probability at least $1-\delta$ on the drawing of the samples, it
+  holds that
+  \begin{dmath*} %\label{equation:beta_stab_csc}
+    \widetilde{\risk}(\minimizer{h}_{\trainingset}) \leq
+    \sampledempiricalrisk(\minimizer{h}_{\trainingset})
+   + \frac{\kappa_{\mcX}^2 \kappa_{\hyperparameterspace}^2}{ \lambda n} +
+    \left(\frac{2 \kappa_{\mcX}^2 \kappa_{\hyperparameterspace}^2}{ \lambda n} +
+     1 + \frac{\kappa_{\mcX}\kappa_{\hyperparameterspace}}{\sqrt{\lambda}}
+      \right) \sqrt{\frac{\log{(1/\delta)}}{n}}.
+  \end{dmath*}
+\end{corollary}
